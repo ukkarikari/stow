@@ -1,0 +1,21 @@
+# local bin
+export PATH="$HOME/.local/bin:$PATH"
+# goon level
+alias xload='xload -label "goon level"'
+# monochrome pacseek
+alias pacseek='pacseek -m -a'
+# video loopback
+alias facecam=' mpv /dev/video0 --profile=low-latency --untimed &'
+
+#trackball keyboard configuration
+DEVICE_NAME="HID 04d9:a0be Mouse"
+
+#pointer
+xsetroot -cursor_name left_ptr
+
+# trackball again
+sleep 2
+
+xinput set-prop "$DEVICE_NAME" "libinput Scroll Method Enabled" 0 0 1
+xinput set-prop "$DEVICE_NAME" "libinput Button Scrolling Button" 3
+xinput set-prop "$DEVICE_NAME" "libinput Natural Scrolling Enabled" 1

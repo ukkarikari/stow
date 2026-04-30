@@ -1,0 +1,146 @@
+! alalalallelelelelele
+
+! 	=== XTERM ===
+
+xterm*Title: XTerm
+xterm*geometry: 92x30
+xterm*internalBorder: 2
+
+xterm*faceName: xft:ProggySquareTT:size=12
+xterm*faceSize: 12
+xterm*boldMode: false
+
+! locale
+xterm*locale: true
+xterm*utf8: 1
+
+! colors
+xterm*foreground: rgb:a8/a8/a8
+xterm*background: rgb:00/00/00
+xterm*color0: rgb:00/00/00
+xterm*color1: rgb:a8/00/00
+xterm*color2: rgb:00/a8/00
+xterm*color3: rgb:a8/54/00
+xterm*color4: rgb:00/00/a8
+xterm*color5: rgb:a8/00/a8
+xterm*color6: rgb:00/a8/a8
+xterm*color7: rgb:a8/a8/a8
+xterm*color8: rgb:54/54/54
+xterm*color9: rgb:fc/54/54
+xterm*color10: rgb:54/fc/54
+xterm*color11: rgb:fc/fc/54
+xterm*color12: rgb:54/54/fc
+xterm*color13: rgb:fc/54/fc
+xterm*color14: rgb:54/fc/fc
+xterm*color15: rgb:fc/fc/fc
+
+! History and scrolling
+xterm*saveLines: 10000
+xterm*scrollBar: false
+xterm*scrollLines: 1
+
+! Copy-paste
+XTerm.vt100.selectToClipboard: true
+
+
+! 	=== RXVT-UNICODE ===
+
+! font config
+URxvt.utf8: 1
+URxvt.locale: en_US.UTF-8
+URxvt.font: xft:Terminus:size=8, xft:Cozette:size=10, xft:Unifont:size=10
+!URxvt.secondaryFont: xft:Unifont:size=10
+
+! clipboard
+URxvt.selection-to-clipboard:primary
+URxvt.keysym.Shift-Insert: eval:paste_primary
+
+URxvt.keysym.Shift-Control-V: eval:paste_clipboard
+URxvt.keysym.Shift-Control-C: eval:selection_to_clipboard
+
+! movmenet
+URxvt.keysym.Control-Up:   \033[1;5A
+URxvt.keysym.Control-Down:    \033[1;5B
+URxvt.keysym.Control-Left:    \033[1;5D
+URxvt.keysym.Control-Right:    \033[1;5C
+
+URxvt*scrollBar: false
+
+! colors
+URxvt*.foreground:   #ffffff
+URxvt*.background:   #000000
+URxvt*.cursorColor:  #ffffff
+
+! black
+URxvt*.color0:       #222222
+URxvt*.color8:       #555753
+
+! red
+URxvt*.color1:       #a31604
+URxvt*.color9:       #c60001
+
+! green
+URxvt*.color2:       #447241
+URxvt*.color10:      #27a343
+
+! yellow
+URxvt*.color3:       #c1951a
+URxvt*.color11:      #d5a30e
+
+! blue
+URxvt*.color4:       #425387
+URxvt*.color12:      #4a5a8d
+
+! magenta
+URxvt*.color5:       #965d98
+URxvt*.color13:      #893c8c
+
+! cyan
+URxvt*.color6:       #06989a
+URxvt*.color14:      #12bccb
+
+! white
+URxvt*.color7:       #d3d7cf
+URxvt*.color15:      #eeeeec
+
+! ---- light terminal ----
+! special
+!URxvt*.foreground:   #000000
+!URxvt*.background:   #ffffff
+!URxvt*.cursorColor:  #5a5758
+!
+!! black
+!URxvt*.color0:       #000000
+!URxvt*.color8:       #000000
+!
+!! red
+!URxvt*.color1:       #ee2e24
+!URxvt*.color9:       #ee2e24
+!
+!! green
+!URxvt*.color2:       #00853e
+!URxvt*.color10:      #00853e
+!
+!! yellow
+!URxvt*.color3:       #ffd204
+!URxvt*.color11:      #ffd204
+!
+!! blue
+!URxvt*.color4:       #98005d
+!URxvt*.color12:      #98005d
+!!URxvt*.color4:       #009ddc
+!!URxvt*.color12:      #009ddc
+!
+!! magenta
+!URxvt*.color5:       #98005d
+!URxvt*.color13:      #98005d
+!
+!! cyan
+!URxvt*.color6:       #de935f
+!URxvt*.color14:      #de935f
+!
+!! white
+!URxvt*.color7:       #d9d8d8
+!URxvt*.color15:      #ffffff
+!
+!

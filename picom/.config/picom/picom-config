@@ -1,0 +1,6 @@
+animations = ({
+        triggers = [ "geometry" ];
+        preset = "geometry-change";
+        duration = 0.14;
+}
+)
