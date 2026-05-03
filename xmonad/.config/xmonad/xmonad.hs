@@ -27,6 +27,7 @@ import XMonad.Layout.ResizableTile
 import XMonad.Layout.StackTile
 import XMonad.Layout.Tabbed
 import XMonad.Layout.SimpleFloat
+import XMonad.Layout.DecorationMadness
 import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig
 import XMonad.Util.NamedScratchpad
@@ -121,15 +122,16 @@ codeLayouts =
         )
 
 webLayouts =
-    noBorders (tabbedBottom shrinkText myTabTheme) 
+    noBorders (tabbedBottom shrinkText def) 
     ||| simpleFloat
 
 sysLayouts =
-  meinKreis
+  circleSimpleDecoResizable
   ||| maxMagnifierOff Grid
 
 chatLayouts =
   maxMagnifierOff ( StackTile 1 (3/100) (8/9) )
+  ||| floatSimpleSimple
 
 defaultLayout =
   noBorders Full
