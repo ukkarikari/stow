@@ -124,6 +124,7 @@ codeLayouts =
 webLayouts =
     noBorders (tabbedBottom shrinkText def) 
     ||| simpleFloat
+    ||| circleSimpleDecoResizable
 
 sysLayouts =
   circleSimpleDecoResizable
