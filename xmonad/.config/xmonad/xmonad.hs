@@ -198,9 +198,8 @@ myStartupHook = do
   mapM_
     spawnOnce
     [ -- lock xss cmd
-      "xss-lock xtrlock",
-      -- compositor cmd
-      "pkill picom ; picom --backend glx --fading --fade-delta 2 --config $HOME/.config/picom/picom-config"
+    "xss-lock 'i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa'",
+    "pkill picom ; picom --backend glx --fading --fade-delta 2 --config $HOME/.config/picom/picom-config"
       --    TODO edit the wpp src and change this botch
       -- , "$HOME/.local/bin/wppsnow"
       -- , "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1440 900 windowmove 0 0"
@@ -240,10 +239,11 @@ windowKeybs =
 
 utilityKeybs =
   [ -- screenshot tools
-    ("<Print>", spawn "scrot -f ~/Pictures/Screenshots/%F-%H%M%S.png"),
+    ("<Print>", spawn "scrot -f ~/Documents/Pictures/Screenshots/%F-%H%M%S.png"),
     ("S-<Print>", spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png"),
     -- screen lock
-    ("<XF86ScreenSaver>", spawn "xtrlock"),
+    ("<XF86ScreenSaver>", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"),
+    ("M-S-l", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"),
     -- dmenu
     ("M-p", spawn "dmenu_run -sb '#ffffff' -sf '#000000' -fn Cozette:bold:size=10"),
     ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-"),
