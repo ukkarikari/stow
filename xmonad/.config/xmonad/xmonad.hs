@@ -15,7 +15,6 @@ import XMonad.Hooks.RefocusLast
 import XMonad.Layout.Accordion
 import XMonad.Layout.CircleEx
 import XMonad.Layout.Gaps
-import XMonad.Layout.Grid
 import XMonad.Layout.IfMax
 import XMonad.Layout.Magnifier
 import XMonad.Layout.MultiDishes
@@ -28,8 +27,18 @@ import XMonad.Layout.StackTile
 import XMonad.Layout.Tabbed
 import XMonad.Layout.SimpleFloat
 import XMonad.Layout.DecorationMadness
+import XMonad.Layout.Decoration
+import XMonad.Layout.SimpleDecoration
+import XMonad.Layout.HintedGrid
+import XMonad.Layout.IM
+import XMonad.Layout.WindowArranger
+import XMonad.Layout.SubLayouts
+import XMonad.Layout.WindowNavigation
+import XMonad.Layout.Simplest
+import XMonad.Actions.MouseResize
 import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig
+
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
 import XMonad.Util.SpawnOnce
@@ -115,27 +124,29 @@ myLayouts =
     defaultLayout
 
 codeLayouts =
-  noBorders Full
-    ||| ( IfMax 2 (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) [])) $
-            IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
-              maxMagnifierOff Grid
-        )
+  ( IfMax 2 (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) [])) $
+      IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
+        maxMagnifierOff ( simpleFloat' shrinkText myTabTheme )
+  )
+  ||| noBorders Full
 
 webLayouts =
-    noBorders (tabbedBottom shrinkText def) 
-    ||| simpleFloat
-    ||| circleSimpleDecoResizable
+    noBorders (tabbedBottom shrinkText myTabTheme) 
+    ||| simpleFloat' shrinkText myTabTheme
+    ||| circleFloatResizable 
 
 sysLayouts =
-  circleSimpleDecoResizable
-  ||| maxMagnifierOff Grid
+  circleFloatResizable
+  ||| Grid False
 
 chatLayouts =
   maxMagnifierOff ( StackTile 1 (3/100) (8/9) )
-  ||| floatSimpleSimple
+  ||| simpleFloat' shrinkText myTabTheme
 
 defaultLayout =
   noBorders Full
+  ||| simpleFloat' shrinkText myTabTheme
+--  ||| Full
 
 --  --------- specific definitions ---------
 meinKreis =
@@ -151,16 +162,34 @@ meinKreis =
             }
       )
 
+circleFloatResizable =
+  circleDefaultResizable shrinkText myTabTheme
+
+
 myTabTheme :: Theme
 myTabTheme = def
-  { fontName            = "Cozette:bold:size=12"
-  , activeColor         = "#ffffff"
-  , inactiveColor       = "#000000"
-  , activeBorderColor   = "#ffffff"
-  , inactiveBorderColor = "#222222"
-  , activeTextColor     = "#000000"
-  , inactiveTextColor   = "#666666"
-  , decoHeight          = 12
+  { fontName            = "xft:Terminus:size=8"
+  , activeColor         = "#8a999e"
+  , inactiveColor       = "#545d75"
+  , activeBorderColor   = "#ccd0d2"
+  , inactiveBorderColor = "#6c758a"
+  , activeTextColor     = "#ffffff"
+  , inactiveTextColor   = "#9699a2"
+  , decoHeight          = 14
+  }
+
+myXPConfig :: XPConfig
+myXPConfig = def
+  { font                = "xft:Cozette:size=10"
+  , bgColor             = "#545d75"
+  , fgColor             = "#ffffff"
+  , bgHLight            = "#8a999e"
+  , fgHLight            = "#ffffff"
+  , borderColor         = "#6c758a"
+  , promptBorderWidth   = 1
+  , height              = 18
+  , position            = CenteredAt 0.4 0.75 
+  , historySize         = 100
   }
 
 -- ========= STARTUP HOOK =========
@@ -220,7 +249,8 @@ utilityKeybs =
     ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-"),
     ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+"),
     ("<XF86AudioMute>", spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
-    ("M-g", passPrompt def)
+    ("M-g", passPrompt myXPConfig),
+    ("M-c", shellPrompt myXPConfig)
   ]
 
 miscKeybs =
