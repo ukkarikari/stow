@@ -245,12 +245,12 @@ utilityKeybs =
     ("<XF86ScreenSaver>", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"),
     ("M-S-l", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"),
     -- dmenu
-    ("M-p", spawn "dmenu_run -sb '#ffffff' -sf '#000000' -fn Cozette:bold:size=10"),
+    -- ("M-p", spawn "dmenu_run -sb '#ffffff' -sf '#000000' -fn Cozette:bold:size=10"),
     ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-"),
     ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+"),
     ("<XF86AudioMute>", spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
-    ("M-g", passPrompt myXPConfig),
-    ("M-c", shellPrompt myXPConfig)
+    ("M-S-p", passPrompt myXPConfig),
+    ("M-p", shellPrompt myXPConfig)
   ]
 
 miscKeybs =
