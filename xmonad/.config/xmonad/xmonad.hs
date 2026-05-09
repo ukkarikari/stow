@@ -35,6 +35,7 @@ import XMonad.Layout.WindowArranger
 import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.Simplest
+import XMonad.Layout.FocusTracking
 import XMonad.Actions.MouseResize
 import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig
@@ -104,44 +105,57 @@ myVolume = do
           else "☎"
   return (Just status)
 
-    -- ========== WORKSPACES =======
+-- ========== WORKSPACES =======
 myWorkspaces :: [WorkspaceId]
 myWorkspaces =
   [ "code",
     "web",
     "code_alt",
     "chat",
-    "sys"
+    "rdp",
+    "aux"
   ]
 
 --  ========= LAYOUTS =========
 myLayouts =
   avoidStruts $
-    onWorkspaces ["code", "code_alt"] codeLayouts $
+    onWorkspace "code" codeLayouts $
+    onWorkspace "code_alt" codeAltLayouts $
     onWorkspace "web" webLayouts $
-    onWorkspace "sys" sysLayouts $
-    onWorkspace "chat" chatLayouts 
+    onWorkspace "aux" auxLayouts $
+    onWorkspace "chat" chatLayouts $ 
+    onWorkspace "rdp" rdpLayouts 
     defaultLayout
 
 codeLayouts =
-  ( IfMax 2 (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) [])) $
+  ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
       IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
-        maxMagnifierOff ( simpleFloat' shrinkText myTabTheme )
+        maxMagnifierOff ( Grid False )
   )
   ||| noBorders Full
 
-webLayouts =
-    noBorders (tabbedBottom shrinkText myTabTheme) 
-    ||| simpleFloat' shrinkText myTabTheme
-    ||| circleFloatResizable 
+codeAltLayouts =
+  ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
+      IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
+        maxMagnifierOff ( Grid False )
+  )
+  ||| simpleFloat' shrinkText myTabTheme
 
-sysLayouts =
-  circleFloatResizable
+webLayouts =
+      magnifierxyOff' 1.8 1.8 $ circleFloatResizable 
+  ||| noBorders (tabbedBottom shrinkText myTabTheme) 
+
+auxLayouts =
+      circleFloatResizable
   ||| Grid False
 
 chatLayouts =
-  maxMagnifierOff ( StackTile 1 (3/100) (8/9) )
-  ||| simpleFloat' shrinkText myTabTheme
+      simpleFloat' shrinkText myTabTheme
+  ||| maxMagnifierOff ( StackTile 1 (3/100) (8/9) )
+
+rdpLayouts =
+      circleFloatResizable
+  ||| noBorders (tabbedBottom shrinkText myTabTheme)
 
 defaultLayout =
   noBorders Full
@@ -164,7 +178,6 @@ meinKreis =
 
 circleFloatResizable =
   circleDefaultResizable shrinkText myTabTheme
-
 
 myTabTheme :: Theme
 myTabTheme = def
@@ -209,11 +222,20 @@ myStartupHook = do
 myManageHook :: ManageHook
 myManageHook =
   composeAll
-    [ isDialog --> doFloat,
+    [ isDialog --> doFloat <+> doF W.shiftMaster,
       className =? "Peek" --> doFloat,
       className =? "Xmessage" --> doCenterFloat,
       className =? "dzen2" --> doIgnore, -- ignore border
       title =? "wpp" --> doIgnore -- ignore wallpaper
+--     isDialog --> do
+--         ws <- liftX (gets (current . windowset))
+--         case stack (workspace ws) of
+--             Nothing -> -- what do you want to do when there's no windows?
+--               Just st -> do
+--                   (rects, _) <- liftX $ doLayout (layout $ workspace ws) (screenRect (screenDetail ws)) (stack (workspace ws))
+--                   case lookup (focus st) rects of
+--                       Nothing -> -- what do you want to do when the layout doesn't display the currently focused window?
+--                         Just rect -> -- use rect and screenRect (screenDetail ws)
     ]
     <+> insertPosition Below Newer
 
@@ -262,15 +284,15 @@ miscKeybs =
 workspaceKeybs =
   [
 --  ("M-1", windows $ W.greedyView "code"),
-    ("M-S-1", windows (W.shift "code")),
+--    ("M-S-1", windows (W.shift "code")),
 --    ("M-2", windows $ W.greedyView "web"),
-    ("M-S-2", windows (W.shift "web")),
+--    ("M-S-2", windows (W.shift "web")),
 --    ("M-3", windows $ W.greedyView "code_alt"),
-    ("M-S-3", windows (W.shift "code_alt")),
+--    ("M-S-3", windows (W.shift "code_alt")),
 --    ("M-7", windows $ W.greedyView "chat"),
-    ("M-S-7", windows (W.shift "chat")),
+--    ("M-S-7", windows (W.shift "chat")),
 --    ("M-8", windows $ W.greedyView "sys"),
-    ("M-S-8", windows (W.shift "sys"))
+--    ("M-S-8", windows (W.shift "sys"))
   ]
 
 myRemovedKeys =

@@ -21,6 +21,9 @@ xset b off
 # pacseek monochrome
 alias pacseek='pacseek -m'
 
+# helix alias
+alias hx='helix'
+
 # yazi to directory script
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
