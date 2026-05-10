@@ -48,7 +48,7 @@ XTerm.vt100.selectToClipboard: true
 ! font config
 URxvt.utf8: 1
 URxvt.locale: en_US.UTF-8
-URxvt.font: xft:Terminus:size=8, xft:Cozette:size=10, xft:Unifont:size=10
+URxvt.font: xft:Terminus:size=9, xft:Cozette:size=10, xft:Unifont:size=10
 !URxvt.secondaryFont: xft:Unifont:size=10
 
 ! clipboard
