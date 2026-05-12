@@ -5,6 +5,7 @@ import XMonad
 import XMonad.Actions.GridSelect
 import XMonad.Actions.UpdatePointer
 import XMonad.Actions.WindowBringer
+import XMonad.Actions.FloatSnap
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.InsertPosition
@@ -12,6 +13,7 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.StatusBar
 import XMonad.Hooks.RefocusLast
+import XMonad.Hooks.Place
 import XMonad.Layout.Accordion
 import XMonad.Layout.CircleEx
 import XMonad.Layout.Gaps
@@ -257,6 +259,7 @@ windowKeybs =
     ("M--", sendMessage MagnifyLess),
     -- toggle dock
     ("M-S-m", sendMessage ToggleStruts)
+    -- ("M-g", withFocused $ snapShrink D Nothing >> snapShrink R Nothing)
   ]
 
 utilityKeybs =
@@ -279,6 +282,8 @@ miscKeybs =
   [ -- TODO change this to be a workspace selector
     ("M-<Tab>", myWorkspaceSelector myGSConfig)
   , ("M-S-<Tab>", bringSelected def)
+  -- toggle mic feedback
+  , ("M-m", spawn "sh -c 'ID=$(pactl list short modules | grep module-loopback | cut -f1 | head -n1); [ -n \"$ID\" ] && pactl unload-module \"$ID\" || pactl load-module module-loopback latency_msec=1'")
   ]
 
 workspaceKeybs =
@@ -321,7 +326,7 @@ myConfig dzen =
   def
     { modMask = mod4Mask, -- rebind alt to win
       layoutHook = myLayouts,
-      manageHook = myManageHook <+> manageDocks <+> manageHook def,
+      manageHook = myManageHook <+> manageDocks <+> placeHook simpleSmart <+> manageHook def,
       startupHook = myStartupHook,
       logHook =
         refocusLastLogHook
