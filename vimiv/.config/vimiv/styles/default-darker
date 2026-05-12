@@ -16,7 +16,7 @@ base0d = #cccccc
 base0e = #dddddd
 base0f = #eeeeee
 
-font = 12pt ProggySquareTT
+font = 12pt Consoleet Terminus
 
 image.bg = #000000
 image.scrollbar.width = 8px
@@ -24,14 +24,14 @@ image.scrollbar.bg = #000000
 image.scrollbar.fg = #333333
 image.scrollbar.padding = 2px
 
-library.font = 12pt ProggySquareTT
+library.font = 9pt Consoleet Terminus-14
 library.fg = #cccccc
 library.padding = 2px
 library.directory.fg = #ffffff
 library.even.bg = #000000
 library.odd.bg = #000000
-library.selected.bg = #1a1a1a
-library.selected.fg = #ffffff
+library.selected.bg = #aaaaaa
+library.selected.fg = #000000
 library.search.highlighted.fg = #000000
 library.search.highlighted.bg = #aaaaaa
 library.scrollbar.width = 8px
@@ -40,7 +40,7 @@ library.scrollbar.fg = #333333
 library.scrollbar.padding = 2px
 library.border = 0px solid
 
-statusbar.font = 12pt ProggySquareTT
+statusbar.font = 6pt Consoleet Terminus-12
 statusbar.bg = #000000
 statusbar.fg = #bbbbbb
 statusbar.error = #888888
@@ -49,7 +49,7 @@ statusbar.info = #aaaaaa
 statusbar.message_border = 2px solid
 statusbar.padding = 4
 
-thumbnail.font = 12pt ProggySquareTT
+thumbnail.font = 12pt Consoleet Terminus-12
 thumbnail.fg = #cccccc
 thumbnail.bg = #000000
 thumbnail.padding = 20
@@ -88,7 +88,7 @@ metadata.border_radius = 10px
 
 image.straighten.color = #aaaaaa
 
-prompt.font = 12pt ProggySquareTT
+prompt.font = 12pt Consoleet Terminus\-12
 prompt.fg = #cccccc
 prompt.bg = #000000
 prompt.padding = 2px
