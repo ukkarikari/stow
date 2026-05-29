@@ -282,9 +282,7 @@ windowKeybs =
     ("M-C-<Left>", sendMessage (DecreaseLeft 20)),
     ("M-C-<Right>", sendMessage (DecreaseRight 20)),
     ("M-C-<Up>", sendMessage (DecreaseUp 20)),
-    ("M-C-<Down>", sendMessage (DecreaseDown 20)),
-    -- misc floating windows
-    ("M-C-g", withFocused (keysMoveWindow (500,300)))
+    ("M-C-<Down>", sendMessage (DecreaseDown 20))
     --
   ]
 
