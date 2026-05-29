@@ -28,6 +28,8 @@ import XMonad.Layout.ResizableTile
 import XMonad.Layout.StackTile
 import XMonad.Layout.Tabbed
 import XMonad.Layout.SimpleFloat
+import XMonad.Layout.NoFrillsDecoration
+import XMonad.Layout.SimplestFloat
 import XMonad.Layout.DecorationMadness
 import XMonad.Layout.Decoration
 import XMonad.Layout.SimpleDecoration
@@ -67,13 +69,15 @@ main = do
 
 -- ---------- dzen command ----------
 myDzenCmd :: String
-myDzenCmd =
-  "dzen2"
-    ++ " -dock"
-    ++ " -ta r"
-    ++ " -fn Cozette:bold:size=10"
-    ++ " -bg #000000"
-    ++ " -fg #ffffff"
+-- myDzenCmd =
+--   "dzen2"
+--     ++ " -dock"
+--     ++ " -ta r"
+--     ++ " -fn Cozette:bold:size=10"
+--     ++ " -bg #000000"
+--     ++ " -fg #ffffff"
+
+myDzenCmd = "" --temp 
 
 -- ---------- pretty printer ----------
 myPP h =
@@ -113,21 +117,20 @@ myWorkspaces =
   [ "code",
     "web",
     "code_alt",
-    "chat",
     "rdp",
-    "aux"
+    "aux",
+    "write"
   ]
 
 --  ========= LAYOUTS =========
 myLayouts =
-  avoidStruts $
-    onWorkspace "code" codeLayouts $
-    onWorkspace "code_alt" codeAltLayouts $
-    onWorkspace "web" webLayouts $
-    onWorkspace "aux" auxLayouts $
-    onWorkspace "chat" chatLayouts $ 
-    onWorkspace "rdp" rdpLayouts 
-    defaultLayout
+  onWorkspace "code" codeLayouts $
+  onWorkspace "code_alt" codeAltLayouts $
+  onWorkspace "web" webLayouts $
+  onWorkspace "aux" auxLayouts $
+  onWorkspace "rdp" rdpLayouts $
+  onWorkspace "write" writeLayouts $ 
+  defaultLayout
 
 codeLayouts =
   ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
@@ -137,11 +140,9 @@ codeLayouts =
   ||| noBorders Full
 
 codeAltLayouts =
-  ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
-      IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
-        maxMagnifierOff ( Grid False )
-  )
-  ||| simpleFloat' shrinkText myTabTheme
+  mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat
+  -- windowArrange $ mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat
+  ||| Full
 
 webLayouts =
       magnifierxyOff' 1.8 1.8 $ circleFloatResizable 
@@ -149,15 +150,21 @@ webLayouts =
 
 auxLayouts =
       circleFloatResizable
-  ||| Grid False
-
-chatLayouts =
-      simpleFloat' shrinkText myTabTheme
+  ||| simpleFloat' shrinkText myTabTheme
   ||| maxMagnifierOff ( StackTile 1 (3/100) (8/9) )
+  ||| Grid False
 
 rdpLayouts =
       circleFloatResizable
   ||| noBorders (tabbedBottom shrinkText myTabTheme)
+
+
+writeLayouts =
+  ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
+      IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
+        maxMagnifierOff ( Grid False )
+  )
+  ||| noBorders Full
 
 defaultLayout =
   noBorders Full
@@ -258,8 +265,27 @@ windowKeybs =
     ("M-S-=", sendMessage MagnifyMore),
     ("M--", sendMessage MagnifyLess),
     -- toggle dock
-    ("M-S-m", sendMessage ToggleStruts)
+    ("M-S-m", sendMessage ToggleStruts),
     -- ("M-g", withFocused $ snapShrink D Nothing >> snapShrink R Nothing)
+    -- 
+    -- move floating window
+    ("M-<Left>", sendMessage (MoveLeft 20)),
+    ("M-<Right>", sendMessage (MoveRight 20)),
+    ("M-<Up>", sendMessage (MoveUp 20)),
+    ("M-<Down>", sendMessage (MoveDown 20)),
+    -- increase floating windows
+    ("M-S-<Left>", sendMessage (IncreaseLeft 20)),
+    ("M-S-<Right>", sendMessage (IncreaseRight 20)),
+    ("M-S-<Up>", sendMessage (IncreaseUp 20)),
+    ("M-S-<Down>", sendMessage (IncreaseDown 20)),
+    -- decrease floating windows
+    ("M-C-<Left>", sendMessage (DecreaseLeft 20)),
+    ("M-C-<Right>", sendMessage (DecreaseRight 20)),
+    ("M-C-<Up>", sendMessage (DecreaseUp 20)),
+    ("M-C-<Down>", sendMessage (DecreaseDown 20)),
+    -- misc floating windows
+    ("M-C-g", withFocused (keysMoveWindow (500,300)))
+    --
   ]
 
 utilityKeybs =
