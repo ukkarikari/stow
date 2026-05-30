@@ -1,4 +1,4 @@
-theme = "cyan_light"
+theme = "default"
 [editor]
 true-color=true
 [keys.normal]

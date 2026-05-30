@@ -144,7 +144,7 @@ codeAltLayouts =
   ||| noBorders Full
 
 webLayouts =
-      magnifierxyOff' 1.8 1.8 $ circleFloatResizable 
+  magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
   ||| noBorders (tabbedBottom shrinkText myTabTheme) 
 
 auxLayouts =
@@ -266,7 +266,8 @@ windowKeybs =
     ("M-C-h", sendMessage (DecreaseLeft 25)),
     ("M-C-l", sendMessage (IncreaseRight 25)),
     ("M-C-k", sendMessage (IncreaseDown 25)),
-    ("M-C-j", sendMessage (DecreaseUp 25))
+    ("M-C-j", sendMessage (DecreaseUp 25)),
+    ("M-S-g", sendMessage $ SetGeometry (Rectangle 300 100 800 600))
   ]
 
 utilityKeybs =
