@@ -140,9 +140,8 @@ codeLayouts =
   ||| noBorders Full
 
 codeAltLayouts =
-  mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat
-  -- windowArrange $ mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat
-  ||| Full
+  magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
+  ||| noBorders Full
 
 webLayouts =
       magnifierxyOff' 1.8 1.8 $ circleFloatResizable 
@@ -236,15 +235,6 @@ myManageHook =
       className =? "Xmessage" --> doCenterFloat,
       className =? "dzen2" --> doIgnore, -- ignore border
       title =? "wpp" --> doIgnore -- ignore wallpaper
---     isDialog --> do
---         ws <- liftX (gets (current . windowset))
---         case stack (workspace ws) of
---             Nothing -> -- what do you want to do when there's no windows?
---               Just st -> do
---                   (rects, _) <- liftX $ doLayout (layout $ workspace ws) (screenRect (screenDetail ws)) (stack (workspace ws))
---                   case lookup (focus st) rects of
---                       Nothing -> -- what do you want to do when the layout doesn't display the currently focused window?
---                         Just rect -> -- use rect and screenRect (screenDetail ws)
     ]
     <+> insertPosition Below Newer
 
@@ -253,7 +243,6 @@ myKeybs =
   windowKeybs
     ++ utilityKeybs
     ++ miscKeybs
-    ++ workspaceKeybs
 
 -- ------------------------------
 windowKeybs =
@@ -269,21 +258,15 @@ windowKeybs =
     -- ("M-g", withFocused $ snapShrink D Nothing >> snapShrink R Nothing)
     -- 
     -- move floating window
-    ("M-<Left>", sendMessage (MoveLeft 20)),
-    ("M-<Right>", sendMessage (MoveRight 20)),
-    ("M-<Up>", sendMessage (MoveUp 20)),
-    ("M-<Down>", sendMessage (MoveDown 20)),
-    -- increase floating windows
-    ("M-S-<Left>", sendMessage (IncreaseLeft 20)),
-    ("M-S-<Right>", sendMessage (IncreaseRight 20)),
-    ("M-S-<Up>", sendMessage (IncreaseUp 20)),
-    ("M-S-<Down>", sendMessage (IncreaseDown 20)),
-    -- decrease floating windows
-    ("M-C-<Left>", sendMessage (DecreaseLeft 20)),
-    ("M-C-<Right>", sendMessage (DecreaseRight 20)),
-    ("M-C-<Up>", sendMessage (DecreaseUp 20)),
-    ("M-C-<Down>", sendMessage (DecreaseDown 20))
-    --
+    ("M-S-h", sendMessage (MoveLeft 20)),
+    ("M-S-l", sendMessage (MoveRight 20)),
+    ("M-S-k", sendMessage (MoveUp 20)),
+    ("M-S-j", sendMessage (MoveDown 20)),
+    -- increase/decreasing floating windows
+    ("M-C-h", sendMessage (DecreaseLeft 25)),
+    ("M-C-l", sendMessage (IncreaseRight 25)),
+    ("M-C-k", sendMessage (IncreaseDown 25)),
+    ("M-C-j", sendMessage (DecreaseUp 25))
   ]
 
 utilityKeybs =
@@ -292,36 +275,23 @@ utilityKeybs =
     ("S-<Print>", spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png"),
     -- screen lock
     ("<XF86ScreenSaver>", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"),
-    ("M-S-l", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"),
-    -- dmenu
-    -- ("M-p", spawn "dmenu_run -sb '#ffffff' -sf '#000000' -fn Cozette:bold:size=10"),
+    ("M-S-s", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"),
+    -- audio
     ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-"),
     ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+"),
     ("<XF86AudioMute>", spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
+    -- shell prompts
     ("M-S-p", passPrompt myXPConfig),
     ("M-p", shellPrompt myXPConfig)
   ]
 
 miscKeybs =
-  [ -- TODO change this to be a workspace selector
+  [ 
+  -- workspaceSelector
     ("M-<Tab>", myWorkspaceSelector myGSConfig)
   , ("M-S-<Tab>", bringSelected def)
   -- toggle mic feedback
   , ("M-m", spawn "sh -c 'ID=$(pactl list short modules | grep module-loopback | cut -f1 | head -n1); [ -n \"$ID\" ] && pactl unload-module \"$ID\" || pactl load-module module-loopback latency_msec=1'")
-  ]
-
-workspaceKeybs =
-  [
---  ("M-1", windows $ W.greedyView "code"),
---    ("M-S-1", windows (W.shift "code")),
---    ("M-2", windows $ W.greedyView "web"),
---    ("M-S-2", windows (W.shift "web")),
---    ("M-3", windows $ W.greedyView "code_alt"),
---    ("M-S-3", windows (W.shift "code_alt")),
---    ("M-7", windows $ W.greedyView "chat"),
---    ("M-S-7", windows (W.shift "chat")),
---    ("M-8", windows $ W.greedyView "sys"),
---    ("M-S-8", windows (W.shift "sys"))
   ]
 
 myRemovedKeys =
@@ -344,6 +314,7 @@ myRemovedKeys =
 
 moveAndFollow ws =
   windows (W.shift ws)
+
 
 -- ++++++++++ CONFIGURATION +++++++++
 myConfig dzen =
