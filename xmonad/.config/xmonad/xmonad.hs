@@ -40,6 +40,9 @@ import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.Simplest
 import XMonad.Layout.FocusTracking
+import XMonad.Layout.LimitWindows
+import XMonad.Layout.BoringWindows
+import qualified XMonad.Layout.BoringWindows as BW
 import XMonad.Actions.MouseResize
 import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig
@@ -132,16 +135,22 @@ myLayouts =
   onWorkspace "write" writeLayouts $ 
   defaultLayout
 
+-- codeLayouts =
+--   ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
+--       IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
+--         maxMagnifierOff ( Grid False )
+--   )
+--   ||| noBorders Full
+
 codeLayouts =
-  ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
-      IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
-        maxMagnifierOff ( Grid False )
-  )
-  ||| noBorders Full
+  boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) [])) ) )
+  ||| boringAuto ( magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat ) )
+  -- ||| noBorders Full
 
 codeAltLayouts =
-  magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
-  ||| noBorders Full
+  boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) [])) ) )
+  ||| boringAuto ( magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat ) )
+  -- ||| noBorders Full
 
 webLayouts =
   magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
@@ -171,18 +180,18 @@ defaultLayout =
 --  ||| Full
 
 --  --------- specific definitions ---------
-meinKreis =
-  renamed [CutWordsLeft 10, Replace "circle"] $
-    gaps
-      [(L, 120), (R, 200), (U, 20), (D, 20)]
-      ( magnifierxy' 1 1 $
-          circleEx
-            { cMasterRatio = 4 % 8,
-              cStackRatio = 3 % 8,
-              cMultiplier = 6 % 7,
-              cDelta = 2.2 * pi / 4
-            }
-      )
+-- meinKreis =
+--   renamed [CutWordsLeft 10, Replace "circle"] $
+--     gaps
+--       [(L, 120), (R, 200), (U, 20), (D, 20)]
+--       ( magnifierxy' 1 1 $
+--           circleEx
+--             { cMasterRatio = 4 % 8,
+--               cStackRatio = 3 % 8,
+--               cMultiplier = 6 % 7,
+--               cDelta = 2.2 * pi / 4
+--             }
+--       )
 
 circleFloatResizable =
   circleDefaultResizable shrinkText myTabTheme
@@ -246,28 +255,36 @@ myKeybs =
 
 -- ------------------------------
 windowKeybs =
-  [ -- increase/decrease slave size
-    ("M-z", sendMessage MirrorShrink),
-    ("M-a", sendMessage MirrorExpand),
-    -- mafnifier keys
-    ("M-=", sendMessage Toggle),
-    ("M-S-=", sendMessage MagnifyMore),
-    ("M--", sendMessage MagnifyLess),
-    -- toggle dock
-    ("M-S-m", sendMessage ToggleStruts),
-    -- ("M-g", withFocused $ snapShrink D Nothing >> snapShrink R Nothing)
-    -- 
-    -- move floating window
-    ("M-S-h", sendMessage (MoveLeft 45)),
-    ("M-S-l", sendMessage (MoveRight 45)),
-    ("M-S-k", sendMessage (MoveUp 45)),
-    ("M-S-j", sendMessage (MoveDown 45)),
-    -- increase/decreasing floating windows
-    ("M-C-h", sendMessage (DecreaseLeft 25)),
-    ("M-C-l", sendMessage (IncreaseRight 25)),
-    ("M-C-k", sendMessage (IncreaseDown 25)),
-    ("M-C-j", sendMessage (DecreaseUp 25)),
-    ("M-S-g", sendMessage $ SetGeometry (Rectangle 300 100 800 600))
+  [
+    -- overwrite with boring windows
+    ("M-k", BW.focusUp)
+    , ("M-j", BW.focusDown)
+    , ("M-m", BW.focusMaster)
+    -- increase/decrease slave size
+    , ("M-z", sendMessage MirrorShrink)
+    , ("M-a", sendMessage MirrorExpand)
+    -- mafnifier key
+    , ("M-=", sendMessage Toggle)
+    , ("M-S-=", sendMessage MagnifyMore)
+    , ("M--", sendMessage MagnifyLess)
+    -- toggle doc
+    , ("M-S-m", sendMessage ToggleStruts)
+    -- ("M-g", withFocused $ snapShrink D Nothing >> snapShrink R Nothing
+    --
+    -- move floating windo
+    , ("M-S-h", sendMessage (MoveLeft 45))
+    , ("M-S-l", sendMessage (MoveRight 45))
+    , ("M-S-k", sendMessage (MoveUp 45))
+    , ("M-S-j", sendMessage (MoveDown 45))
+    -- increase/decreasing floating window
+    , ("M-C-h", sendMessage (DecreaseLeft 25))
+    , ("M-C-l", sendMessage (IncreaseRight 25))
+    , ("M-C-k", sendMessage (IncreaseDown 25))
+    , ("M-C-j", sendMessage (DecreaseUp 25))
+    , ("M-S-g", sendMessage $ SetGeometry (Rectangle 300 100 800 600))
+    -- move windows (was overwritten by the move floating window keybs)
+    , ("M-S-<Up>", windows W.swapUp)
+    , ("M-S-<Down>", windows W.swapDown)
   ]
 
 utilityKeybs =
