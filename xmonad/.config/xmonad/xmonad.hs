@@ -149,12 +149,12 @@ webLayouts =
 
 auxLayouts =
       circleFloatResizable
-  ||| simpleFloat' shrinkText myTabTheme
+  ||| magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
   ||| maxMagnifierOff ( StackTile 1 (3/100) (8/9) )
   ||| Grid False
 
 rdpLayouts =
-      circleFloatResizable
+      magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
   ||| noBorders (tabbedBottom shrinkText myTabTheme)
 
 
@@ -258,10 +258,10 @@ windowKeybs =
     -- ("M-g", withFocused $ snapShrink D Nothing >> snapShrink R Nothing)
     -- 
     -- move floating window
-    ("M-S-h", sendMessage (MoveLeft 20)),
-    ("M-S-l", sendMessage (MoveRight 20)),
-    ("M-S-k", sendMessage (MoveUp 20)),
-    ("M-S-j", sendMessage (MoveDown 20)),
+    ("M-S-h", sendMessage (MoveLeft 45)),
+    ("M-S-l", sendMessage (MoveRight 45)),
+    ("M-S-k", sendMessage (MoveUp 45)),
+    ("M-S-j", sendMessage (MoveDown 45)),
     -- increase/decreasing floating windows
     ("M-C-h", sendMessage (DecreaseLeft 25)),
     ("M-C-l", sendMessage (IncreaseRight 25)),
