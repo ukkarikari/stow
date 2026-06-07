@@ -50,6 +50,9 @@ import XMonad.Layout.Reflect
 import XMonad.Layout.CenteredMaster
 import XMonad.Layout.Column
 import XMonad.Actions.PerLayoutKeys
+import XMonad.Actions.PerWorkspaceKeys
+import XMonad.Layout.PerScreen
+import XMonad.Layout.Spiral
 import XMonad.Layout.Spacing
 import qualified XMonad.Layout.BoringWindows as BW
 import XMonad.Actions.MouseResize
@@ -136,7 +139,7 @@ myWorkspaces =
   ]
 
 --  ========= LAYOUTS =========
-myLayouts =
+myLayouts = 
   onWorkspace "code" codeLayouts $
   onWorkspace "code_alt" codeAltLayouts $
   onWorkspace "web" webLayouts $
@@ -146,25 +149,24 @@ myLayouts =
   defaultLayout
 
 codeLayouts =
-  boringWindows (magnifiercz' 1.3 (TwoPanePersistent Nothing (3/100) (9/16)) ) 
-  ||| boringWindows circleSelector
-  ||| boringWindows (noBorders Simplest)
-
-codeAltLayouts =
-  boringWindows (magnifiercz' 1.3 (TwoPanePersistent Nothing (3/100) (9/16)) ) 
-  ||| myFloat
-  ||| boringWindows ( noBorders Simplest )
-
-webLayouts =
-  -- boringWindows ( magnifierczOff' 1.3 ( TwoPanePersistent Nothing (3/100) (9/16) ) ) 
   boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
   ||| boringWindows columnSelector
+  -- ||| boringWindows (noBorders Simplest)
+
+codeAltLayouts =
+  boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
+  ||| boringWindows circleSelector
   -- ||| boringWindows ( noBorders Simplest )
 
+webLayouts =
+  boringAuto ( limitWindows 2  ( noBorders (ResizableTall 1 (3 / 100) (9 / 16) [])) )
+  ||| boringWindows roledexSelector
+  ||| boringWindows ( noBorders Simplest )
+
 auxLayouts =
-  boringWindows (spacingWithEdge 10 (Grid False))
-  -- boringWindows $ noFrillsDeco shrinkText myTabTheme ( spacingWithEdge 10 meinKreis )
-  -- ||| myFloat
+  boringWindows ( spiral (9/10) )
+  ||| boringWindows (spacingWithEdge 10 (spiral (9/10)))
+  ||| myFloat
        
 rdpLayouts =
       myFloat
@@ -187,8 +189,9 @@ myFloat =
 
 -- ------ weird old circle layout
 meinKreis =
-    gaps
-      [(L, 140), (R, 200), (U, 20), (D, 20)]
+  ifWider 1280 (
+  gaps 
+      [(L, 160), (R, 200), (U, 30), (D, 5)]
         circleEx
           { cMasterRatio = 8 % 8,
             cStackRatio = 4 % 8,
@@ -196,6 +199,17 @@ meinKreis =
             cDelta = -2.2 * pi / 4,
             cNMaster = 0
           }
+  ) $
+  gaps 
+      [(L, 10), (R, 10), (U, 35), (D, 5)]
+        circleEx
+          { cMasterRatio = 6 % 8,
+            cStackRatio = 4 % 8,
+            cMultiplier = 5 % 7,
+            cDelta = -2.2 * pi / 4,
+            cNMaster = 0
+          }
+  
 
 -- ------ circleFloat with my decorator
 circleFloatResizable =
@@ -204,26 +218,27 @@ circleFloatResizable =
 -- ------ weird sort of window order selector to pair with two pane
 columnSelector = 
   noFrillsDeco shrinkText myTabTheme
-    ( magnifierxyOff' 3.5 1   
-      ( spacingWithEdge 2 ( gaps [(L, 20), (R, 20), (U, 20), (D, 20)]
-        ( Mirror (autoMaster 1 (5/100)  
-               (Mirror $ Column 1.8) )))))
+    ( spacingWithEdge 2   
+      ( gaps [(L, 20), (R, 20), (U, 20), (D, 20)] ( magnifierxyOff' 1.6 1.8
+        -- ( Mirror (autoMaster 1 (5/100)  
+               -- (Mirror $ Column 1.6) )))))
+               (spiral (11/12) ) )))
 
 
 -- ------ same window order selector thing but for cirlce
 circleSelector = 
   noFrillsDeco shrinkText myTabTheme
-    ( magnifierxyOff' 2 3 
+    ( magnifierxyOff' 1.5 1.7 
       ( spacingWithEdge 5 ( gaps [(L, 20), (R, 20), (U, 20), (D, 20)]
         ( Mirror ( autoMaster 1 (5/100)
           meinKreis )))))
 
 -- ------- master window + roledex experiment
--- roledexSelector =
---        noFrillsDeco shrinkText myTabTheme
---          ( spacingWithEdge 5 ( gaps [(L, 20), (R, 20), (U, 20), (D, 20)]
---            ( Mirror (autoMaster 1 (1/100)  $
---                   magnifierxyOff 1.4 1.5 (reflectVert Roledex)  ))))
+roledexSelector =
+       noFrillsDeco shrinkText myTabTheme
+         ( spacingWithEdge 5 ( gaps [(L, 20), (R, 20), (U, 20), (D, 20)]
+           ( Mirror (autoMaster 1 (1/100)  $
+                  magnifierxyOff 1.4 1.5 (reflectVert Roledex)  ))))
 
 
 --  ------ weird ifMax abomination
@@ -237,8 +252,10 @@ circleSelector =
 -- boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
 -- ------ this one is the same but looks cooler after you switch to floating
 -- boringAuto ( limitWindows 3  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
- 
+-- ------ hmmm i think it may actually work better than TwoPane. ill save it just in case though
+-- boringWindows ( magnifierczOff' 1.3 ( TwoPanePersistent Nothing (3/100) (9/16) ) ) 
   
+
 -- -------- decorator themes -----------
 myTabTheme :: Theme
 myTabTheme = def
@@ -364,6 +381,11 @@ miscKeybs =
   , ("M-S-<Tab>", bringSelected def)
   -- toggle mic feedback
   , ("M-S-m", spawn "sh -c 'ID=$(pactl list short modules | grep module-loopback | cut -f1 | head -n1); [ -n \"$ID\" ] && pactl unload-module \"$ID\" || pactl load-module module-loopback latency_msec=1'")
+  -- spawn stuff on aux
+  , ("<F2>", bindOn [("aux", do
+                          spawn "urxvt -e sh -c 'btop; bash'"
+                          spawn "sleep 0.5; snow"
+                          spawn "sleep 1; xload")])
   ]
 
 myRemovedKeys =
