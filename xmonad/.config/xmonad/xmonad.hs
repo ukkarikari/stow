@@ -22,7 +22,8 @@ import XMonad.Layout.Magnifier
 import XMonad.Layout.MultiDishes
 import XMonad.Layout.NoBorders
 import XMonad.Layout.PerWorkspace 
-import XMonad.Layout.Renamed
+-- import XMonad.Layout.Renamed
+import qualified XMonad.Layout.Renamed as Renamed
 import XMonad.Layout.ResizableThreeColumns
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.StackTile
@@ -47,6 +48,9 @@ import XMonad.Layout.TwoPanePersistent
 import XMonad.Layout.AutoMaster
 import XMonad.Layout.Reflect
 import XMonad.Layout.CenteredMaster
+import XMonad.Layout.Column
+import XMonad.Actions.PerLayoutKeys
+import XMonad.Layout.Spacing
 import qualified XMonad.Layout.BoringWindows as BW
 import XMonad.Actions.MouseResize
 import qualified XMonad.StackSet as W
@@ -56,6 +60,7 @@ import XMonad.Util.NamedScratchpad
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
 import XMonad.Util.SpawnOnce
 import XMonad.Prompt
+import XMonad.Prompt.Input
 import XMonad.Prompt.Shell
 import XMonad.Prompt.Pass
 import XMonad.Prompt.Workspace
@@ -91,7 +96,7 @@ myDzenCmd = "" --temp
 myPP h =
   def
     { ppOutput = hPutStrLn h,
-      ppOrder = \(ws : l : t : ex) -> [t, ws] ++ ex,
+      ppOrder = \(ws : l : t : ex) -> [l, t, ws] ++ ex,
       ppCurrent = dzenColor "#000000" "#f9f9f9" . wrap " " " ",
       ppHidden = wrap " " " ",
       ppSep = " ",
@@ -142,25 +147,27 @@ myLayouts =
 
 codeLayouts =
   boringWindows (magnifiercz' 1.3 (TwoPanePersistent Nothing (3/100) (9/16)) ) 
-  ||| boringAuto ( magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat ) )
+  ||| boringWindows circleSelector
   ||| boringWindows (noBorders Simplest)
 
 codeAltLayouts =
   boringWindows (magnifiercz' 1.3 (TwoPanePersistent Nothing (3/100) (9/16)) ) 
-  ||| boringAuto ( mouseResize $ noFrillsDeco shrinkText myTabTheme (magnifierczOff' 1.3 simplestFloat) )
+  ||| myFloat
   ||| boringWindows ( noBorders Simplest )
 
 webLayouts =
-  boringWindows ( noBorders Simplest )
-  ||| boringWindows ( TwoPanePersistent Nothing (3/100) (1/2) )
-  ||| boringWindows ( magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )) 
+  -- boringWindows ( magnifierczOff' 1.3 ( TwoPanePersistent Nothing (3/100) (9/16) ) ) 
+  boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
+  ||| boringWindows columnSelector
+  -- ||| boringWindows ( noBorders Simplest )
 
 auxLayouts =
-  boringAuto ( limitWindows 3  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
-  ||| boringAuto ( mouseResize $ noFrillsDeco shrinkText myTabTheme (magnifierczOff' 1.3 simplestFloat) )
-
+  boringWindows (spacingWithEdge 10 (Grid False))
+  -- boringWindows $ noFrillsDeco shrinkText myTabTheme ( spacingWithEdge 10 meinKreis )
+  -- ||| myFloat
+       
 rdpLayouts =
-      magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
+      myFloat
   ||| noBorders (tabbedBottom shrinkText myTabTheme)
 
 writeLayouts =
@@ -174,11 +181,49 @@ defaultLayout =
 
 --  --------- definitions ---------
 
+myFloat =
+  Renamed.renamed [Renamed.CutWordsLeft 10, Renamed.Replace "My Float"] $
+    boringAuto ( mouseResize $ noFrillsDeco shrinkText myTabTheme (magnifierczOff' 1.3 simplestFloat) )
+
+-- ------ weird old circle layout
+meinKreis =
+    gaps
+      [(L, 140), (R, 200), (U, 20), (D, 20)]
+        circleEx
+          { cMasterRatio = 8 % 8,
+            cStackRatio = 4 % 8,
+            cMultiplier = 5 % 7,
+            cDelta = -2.2 * pi / 4,
+            cNMaster = 0
+          }
+
+-- ------ circleFloat with my decorator
+circleFloatResizable =
+  circleDefaultResizable shrinkText myTabTheme
+
+-- ------ weird sort of window order selector to pair with two pane
+columnSelector = 
+  noFrillsDeco shrinkText myTabTheme
+    ( magnifierxyOff' 3.5 1   
+      ( spacingWithEdge 2 ( gaps [(L, 20), (R, 20), (U, 20), (D, 20)]
+        ( Mirror (autoMaster 1 (5/100)  
+               (Mirror $ Column 1.8) )))))
+
+
+-- ------ same window order selector thing but for cirlce
+circleSelector = 
+  noFrillsDeco shrinkText myTabTheme
+    ( magnifierxyOff' 2 3 
+      ( spacingWithEdge 5 ( gaps [(L, 20), (R, 20), (U, 20), (D, 20)]
+        ( Mirror ( autoMaster 1 (5/100)
+          meinKreis )))))
+
 -- ------- master window + roledex experiment
--- ||| boringAuto (
-    -- Mirror (autoMaster 1 (1/100) 
-      -- ( gaps [(L, 120), (R, 200), (U, 20), (D, 20)] $
-         -- noFrillsDeco shrinkText myTabTheme (magnifierxyOff 1.4 1.5 Roledex) ) ) )
+-- roledexSelector =
+--        noFrillsDeco shrinkText myTabTheme
+--          ( spacingWithEdge 5 ( gaps [(L, 20), (R, 20), (U, 20), (D, 20)]
+--            ( Mirror (autoMaster 1 (1/100)  $
+--                   magnifierxyOff 1.4 1.5 (reflectVert Roledex)  ))))
 
 
 --  ------ weird ifMax abomination
@@ -192,26 +237,7 @@ defaultLayout =
 -- boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
 -- ------ this one is the same but looks cooler after you switch to floating
 -- boringAuto ( limitWindows 3  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
-
--- ------ weird old circle layout
--- meinKreis =
---   renamed [CutWordsLeft 10, Replace "circle"] $
---     gaps
---       [(L, 120), (R, 200), (U, 20), (D, 20)]
---       ( magnifierxy' 1 1 $
---           circleEx
---             { cMasterRatio = 4 % 8,
---               cStackRatio = 3 % 8,
---               cMultiplier = 6 % 7,
---               cDelta = 2.2 * pi / 4
---             }
---       )
-
-
--- ------ circleFloat with my decorator
-circleFloatResizable =
-  circleDefaultResizable shrinkText myTabTheme
-
+ 
   
 -- -------- decorator themes -----------
 myTabTheme :: Theme
@@ -239,6 +265,14 @@ myXPConfig = def
   , position            = CenteredAt 0.4 0.75 
   , historySize         = 100
   }
+
+-- ========= interesting renaming window utility =======
+renameFocusedPrompt :: XPConfig -> X ()
+renameFocusedPrompt conf =
+    inputPrompt conf "Rename window" ?+ \title ->
+        withFocused $ \w ->
+            safeSpawn "wmctrl"
+                ["-i", "-r", show w, "-T", title]
 
 -- ========= STARTUP HOOK =========
 myStartupHook = do
@@ -275,7 +309,7 @@ myKeybs =
 windowKeybs =
   [
     -- overwrite with boring windows
-    ("M-k", BW.focusUp)
+      ("M-k", BW.focusUp)
     , ("M-j", BW.focusDown)
     , ("M-m", BW.focusMaster)
     -- increase/decrease slave size
@@ -292,33 +326,35 @@ windowKeybs =
     -- move floating windo
     , ("M-S-h", sendMessage (MoveLeft 45))
     , ("M-S-l", sendMessage (MoveRight 45))
-    , ("M-S-k", sendMessage (MoveUp 45))
-    , ("M-S-j", sendMessage (MoveDown 45))
+    , ("M-S-k", bindByLayout [ ("My Float", sendMessage (MoveUp 45)), ("", windows W.swapUp) ] )
+    , ("M-S-j", bindByLayout [ ("My Float", sendMessage (MoveDown 45)), ("", windows W.swapDown) ])
     -- increase/decreasing floating window
     , ("M-C-h", sendMessage (DecreaseLeft 45))
     , ("M-C-l", sendMessage (IncreaseRight 45))
     , ("M-C-k", sendMessage (IncreaseDown 45))
     , ("M-C-j", sendMessage (DecreaseUp 45))
     , ("M-S-g", sendMessage $ SetGeometry (Rectangle 300 100 800 600))
-    -- move windows (was overwritten by the move floating window keybs)
-    , ("M-S-<Up>", windows W.swapUp)
-    , ("M-S-<Down>", windows W.swapDown)
+    -- move windows (previously overwritten by the move floating window keybs)
+    -- , ("M-S-<Up>", windows W.swapUp)
+    -- , ("M-S-<Down>", windows W.swapDown)
   ]
 
 utilityKeybs =
   [ -- screenshot tools
-    ("<Print>", spawn "scrot -f ~/Documents/Pictures/Screenshots/%F-%H%M%S.png"),
-    ("S-<Print>", spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png"),
-    -- screen lock
-    ("<XF86ScreenSaver>", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"),
-    ("M-S-s", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"),
-    -- audio
-    ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-"),
-    ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+"),
-    ("<XF86AudioMute>", spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
-    -- shell prompts
-    ("M-S-p", passPrompt myXPConfig),
-    ("M-p", shellPrompt myXPConfig)
+      ("<Print>", spawn "scrot -f ~/Documents/Pictures/Screenshots/%F-%H%M%S.png")
+    , ("S-<Print>", spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png")
+      -- screen lock
+    , ("<XF86ScreenSaver>", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa")
+    , ("M-S-C-s", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa")
+      -- audio
+    , ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-")
+    , ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+")
+    , ("<XF86AudioMute>", spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
+      -- shell prompts
+    , ("M-S-p", passPrompt myXPConfig)
+    , ("M-p", shellPrompt myXPConfig)
+      -- rename winodw
+    , ("M-S-r", renameFocusedPrompt myXPConfig)
   ]
 
 miscKeybs =
