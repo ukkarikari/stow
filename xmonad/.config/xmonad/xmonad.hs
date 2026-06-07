@@ -42,6 +42,11 @@ import XMonad.Layout.Simplest
 import XMonad.Layout.FocusTracking
 import XMonad.Layout.LimitWindows
 import XMonad.Layout.BoringWindows
+import XMonad.Layout.Roledex
+import XMonad.Layout.TwoPanePersistent
+import XMonad.Layout.AutoMaster
+import XMonad.Layout.Reflect
+import XMonad.Layout.CenteredMaster
 import qualified XMonad.Layout.BoringWindows as BW
 import XMonad.Actions.MouseResize
 import qualified XMonad.StackSet as W
@@ -135,51 +140,60 @@ myLayouts =
   onWorkspace "write" writeLayouts $ 
   defaultLayout
 
--- codeLayouts =
---   ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
---       IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
---         maxMagnifierOff ( Grid False )
---   )
---   ||| noBorders Full
-
 codeLayouts =
-  boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) [])) ) )
+  boringWindows (magnifiercz' 1.3 (TwoPanePersistent Nothing (3/100) (9/16)) ) 
   ||| boringAuto ( magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat ) )
-  -- ||| noBorders Full
+  ||| boringWindows (noBorders Simplest)
 
 codeAltLayouts =
-  boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) [])) ) )
-  ||| boringAuto ( magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat ) )
-  -- ||| noBorders Full
+  boringWindows (magnifiercz' 1.3 (TwoPanePersistent Nothing (3/100) (9/16)) ) 
+  ||| boringAuto ( mouseResize $ noFrillsDeco shrinkText myTabTheme (magnifierczOff' 1.3 simplestFloat) )
+  ||| boringWindows ( noBorders Simplest )
 
 webLayouts =
-  magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
-  ||| noBorders (tabbedBottom shrinkText myTabTheme) 
+  boringWindows ( noBorders Simplest )
+  ||| boringWindows ( TwoPanePersistent Nothing (3/100) (1/2) )
+  ||| boringWindows ( magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )) 
 
 auxLayouts =
-      circleFloatResizable
-  ||| magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
-  ||| maxMagnifierOff ( StackTile 1 (3/100) (8/9) )
-  ||| Grid False
+  boringAuto ( limitWindows 3  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
+  ||| boringAuto ( mouseResize $ noFrillsDeco shrinkText myTabTheme (magnifierczOff' 1.3 simplestFloat) )
 
 rdpLayouts =
       magnifierczOff 1.3 ( mouseResize $ noFrillsDeco shrinkText myTabTheme simplestFloat )
   ||| noBorders (tabbedBottom shrinkText myTabTheme)
 
-
 writeLayouts =
-  ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
-      IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
-        maxMagnifierOff ( Grid False )
-  )
-  ||| noBorders Full
+  boringWindows (magnifiercz' 1.3 (TwoPanePersistent Nothing (3/100) (9/16)) ) 
+  ||| noBorders Simplest
 
 defaultLayout =
-  noBorders Full
+  noBorders Simplest
   ||| simpleFloat' shrinkText myTabTheme
---  ||| Full
 
---  --------- specific definitions ---------
+
+--  --------- definitions ---------
+
+-- ------- master window + roledex experiment
+-- ||| boringAuto (
+    -- Mirror (autoMaster 1 (1/100) 
+      -- ( gaps [(L, 120), (R, 200), (U, 20), (D, 20)] $
+         -- noFrillsDeco shrinkText myTabTheme (magnifierxyOff 1.4 1.5 Roledex) ) ) )
+
+
+--  ------ weird ifMax abomination
+-- ( IfMax 2 (noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (3 / 5) []))) $
+--     IfMax 3 (maximizeVertical (MultiDishes 2 3 (1 / 8))) $
+--       maxMagnifierOff ( Grid False )
+-- )
+
+
+--  ----- when i made TwoPane with BoringWindows because i didnt know TwoPane existed
+-- boringAuto ( limitWindows 2  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
+-- ------ this one is the same but looks cooler after you switch to floating
+-- boringAuto ( limitWindows 3  ( noBorders (magnifiercz' 1.3 (ResizableTall 1 (3 / 100) (9 / 16) [])) ) )
+
+-- ------ weird old circle layout
 -- meinKreis =
 --   renamed [CutWordsLeft 10, Replace "circle"] $
 --     gaps
@@ -193,9 +207,13 @@ defaultLayout =
 --             }
 --       )
 
+
+-- ------ circleFloat with my decorator
 circleFloatResizable =
   circleDefaultResizable shrinkText myTabTheme
 
+  
+-- -------- decorator themes -----------
 myTabTheme :: Theme
 myTabTheme = def
   { fontName            = "xft:Terminus:size=8"
@@ -277,10 +295,10 @@ windowKeybs =
     , ("M-S-k", sendMessage (MoveUp 45))
     , ("M-S-j", sendMessage (MoveDown 45))
     -- increase/decreasing floating window
-    , ("M-C-h", sendMessage (DecreaseLeft 25))
-    , ("M-C-l", sendMessage (IncreaseRight 25))
-    , ("M-C-k", sendMessage (IncreaseDown 25))
-    , ("M-C-j", sendMessage (DecreaseUp 25))
+    , ("M-C-h", sendMessage (DecreaseLeft 45))
+    , ("M-C-l", sendMessage (IncreaseRight 45))
+    , ("M-C-k", sendMessage (IncreaseDown 45))
+    , ("M-C-j", sendMessage (DecreaseUp 45))
     , ("M-S-g", sendMessage $ SetGeometry (Rectangle 300 100 800 600))
     -- move windows (was overwritten by the move floating window keybs)
     , ("M-S-<Up>", windows W.swapUp)
@@ -309,7 +327,7 @@ miscKeybs =
     ("M-<Tab>", myWorkspaceSelector myGSConfig)
   , ("M-S-<Tab>", bringSelected def)
   -- toggle mic feedback
-  , ("M-m", spawn "sh -c 'ID=$(pactl list short modules | grep module-loopback | cut -f1 | head -n1); [ -n \"$ID\" ] && pactl unload-module \"$ID\" || pactl load-module module-loopback latency_msec=1'")
+  , ("M-S-m", spawn "sh -c 'ID=$(pactl list short modules | grep module-loopback | cut -f1 | head -n1); [ -n \"$ID\" ] && pactl unload-module \"$ID\" || pactl load-module module-loopback latency_msec=1'")
   ]
 
 myRemovedKeys =
@@ -341,9 +359,10 @@ myConfig dzen =
       layoutHook = myLayouts,
       manageHook = myManageHook <+> manageDocks <+> placeHook simpleSmart <+> manageHook def,
       startupHook = myStartupHook,
-      logHook =
+      logHook = do
         refocusLastLogHook
-        <> dynamicLogWithPP (myPP dzen) >> updatePointer (0.5, 0.5) (0, 0),
+        updatePointer (0.5, 0.5) (0, 0)
+        dynamicLogWithPP (myPP dzen),
       handleEventHook =
         refocusLastWhen (pure True)
         <> handleEventHook def,
