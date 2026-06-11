@@ -167,7 +167,7 @@ researchLayouts = boringWindows $
 
 mediaLayouts = boringWindows $
   roledexGapDeco
-  ||| boringWindows (noBorders Simplest)
+  ||| noBorders Simplest
   
 defaultLayout = boringWindows $
   noBorders Simplest
@@ -380,6 +380,8 @@ execXclipPrint = spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i 
 execLock = spawn
   "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"
 
+execMicLoopback = spawn
+  "sh -c 'ID=$(pactl list short modules | grep module-loopback | cut -f1 | head -n1); [ -n \"$ID\" ] && pactl unload-module \"$ID\" || pactl load-module module-loopback latency_msec=1'"
 
 -- =====================================================================
 --                                KEYBINDS                            
@@ -416,8 +418,10 @@ windowKeybindss =
     -- movmt
     , ("M-S-h", sendMessage (MoveLeft 45))
     , ("M-S-l", sendMessage (MoveRight 45))
-    , ("M-S-k", bindByLayout [ ("My Float", sendMessage (MoveUp 45)), ("", windows W.swapUp) ] )
-    , ("M-S-j", bindByLayout [ ("My Float", sendMessage (MoveDown 45)), ("", windows W.swapDown) ])
+    , ("M-S-k", bindByLayout [ ("NoFrillsDeco SimplestFloat", sendMessage (MoveUp 45)),
+                               ("", windows W.swapUp) ] )
+    , ("M-S-j", bindByLayout [ ("NoFrillsDeco SimplestFloat", sendMessage (MoveDown 45)),
+                               ("", windows W.swapDown) ])
     -- resize
     , ("M-C-h", sendMessage (DecreaseLeft 45))
     , ("M-C-l", sendMessage (IncreaseRight 45))
@@ -449,7 +453,6 @@ utilityKeybinds =
     , ("<XF86AudioMute>",        spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
   ]
 
-
 tempKeybinds =
   [ 
     -- spawn windows on aux
@@ -460,7 +463,7 @@ tempKeybinds =
                     ])
 
   -- toggle mic feedback
-  , ("M-C-m", spawn "sh -c 'ID=$(pactl list short modules | grep module-loopback | cut -f1 | head -n1); [ -n \"$ID\" ] && pactl unload-module \"$ID\" || pactl load-module module-loopback latency_msec=1'")
+  , ("M-C-m", execMicLoopback)
 
   -- test
   , ("M-C-d",
