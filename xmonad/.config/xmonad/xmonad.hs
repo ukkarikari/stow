@@ -1,6 +1,7 @@
 
 import Data.Ratio
 import System.IO (hPutStrLn)
+import System.IO (Handle)
 
 import XMonad
 
@@ -55,6 +56,7 @@ import XMonad.Actions.MouseResize
 import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig
 
+import XMonad.Util.NamedWindows (getName)
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
 import XMonad.Util.SpawnOnce
 import XMonad.Prompt
@@ -83,6 +85,7 @@ import XMonad.Hooks.Place
 -- appearance
 -- utilites
 -- hooks
+-- applications
 -- keybindings
 -- 
 --     ----------------
@@ -106,13 +109,8 @@ myConfig dzen =
       layoutHook = myLayouts,
       manageHook = myManageHook <+> manageDocks <+> placeHook simpleSmart <+> manageHook def,
       startupHook = myStartupHook,
-      logHook = do
-        refocusLastLogHook
-        updatePointer (0.5, 0.5) (0, 0)
-        dynamicLogWithPP (myPP dzen),
-      handleEventHook =
-        refocusLastWhen (pure True)
-        <> handleEventHook def,
+      logHook = myLogHook dzen,
+      handleEventHook = myHandleEventHook,
       workspaces = myWorkspaces,
       focusFollowsMouse = False,
       terminal = "urxvt",
@@ -273,10 +271,60 @@ renameFocusedPrompt conf =
             safeSpawn "wmctrl"
                 ["-i", "-r", show w, "-T", title]
 
+-- debug utility
+myDebugLog :: X ()
+myDebugLog =
+  withWindowSet $ \ws -> do
+    let curWs =
+          W.currentTag ws
+
+        layoutName =
+          description $
+            W.layout $
+              W.workspace $
+                W.current ws
+
+        stackOrder =
+          maybe []
+                W.integrate
+                ( W.stack
+                $ W.workspace
+                $ W.current ws
+                )
+        focused = W.peek ws
+
+    names <- mapM getName stackOrder
+
+    
+    let stackLines =
+          zipWith
+            (\w name ->
+                (if Just w == focused then "* " else "  ")
+                ++ show name
+                ++ " ("
+                ++ show w
+                ++ ")"
+            )
+            stackOrder
+            names
+
+    io $
+      writeFile "/tmp/xmonad-debug" $
+        unlines $
+          [ "workspace: " ++ curWs
+          , "layout:    " ++ layoutName
+          , ""
+          , "stack:"
+          ]
+          ++ stackLines
+
 
 -- =========================================================================
 --                                    HOOKS
 -- =========================================================================
+
+moveAndFollow ws =
+  windows (W.shift ws)
 
 -- ------- startup hook -------
 myStartupHook = do
@@ -291,6 +339,7 @@ myStartupHook = do
       -- , "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1440 900 windowmove 0 0"
     ]
 
+
 --  -------  manage hook ------
 myManageHook :: ManageHook
 myManageHook =
@@ -299,9 +348,37 @@ myManageHook =
       className =? "Peek" --> doFloat,
       className =? "Xmessage" --> doCenterFloat,
       className =? "dzen2" --> doIgnore, -- ignore border
+      title =? "watch"
+        --> doRectFloat (W.RationalRect 0.6 0.0 0.4 0.3),
       title =? "wpp" --> doIgnore -- ignore wallpaper
     ]
     <+> insertPosition Below Newer
+
+
+-- -------  log hook  ---------
+myLogHook dzen = do
+    refocusLastLogHook
+    updatePointer (0.5, 0.5) (0, 0)
+    myDebugLog 
+    dynamicLogWithPP (myPP dzen)
+
+
+-- -----  handle event hook -----
+myHandleEventHook =
+    refocusLastWhen (pure True)
+    <> handleEventHook def
+
+
+
+-- =====================================================================
+--                             APPLICATIONS                            
+-- =====================================================================
+
+execPrint = spawn "scrot -f ~/Documents/Pictures/Screenshots/%F-%H%M%S.png"
+execXclipPrint = spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png"
+
+execLock = spawn
+  "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa"
 
 
 -- =====================================================================
@@ -309,11 +386,11 @@ myManageHook =
 -- =====================================================================
 
 myKeybs =
-  windowKeybs
-    ++ utilityKeybs
-    ++ miscKeybs
+  windowKeybindss
+    ++ utilityKeybinds
+    ++ tempKeybinds
 
-windowKeybs =
+windowKeybindss =
   [
     -- overwrite with boring windows
       ("M-k", BW.focusUp)
@@ -321,66 +398,75 @@ windowKeybs =
     , ("M-m", BW.focusMaster)
     , ("M-b", BW.markBoring)
     , ("M-S-b", BW.clearBoring)
+
     -- increase/decrease slave size
     , ("M-z", sendMessage MirrorShrink)
     , ("M-a", sendMessage MirrorExpand)
-    -- mafnifier key
+
+    -- magnifier keys
     , ("M-=", sendMessage Toggle)
     , ("M-S-=", sendMessage MagnifyMore)
     , ("M--", sendMessage MagnifyLess)
-    -- toggle doc
-    -- , ("M-S-m", sendMessage ToggleStruts)
-    -- ("M-g", withFocused $ snapShrink D Nothing >> snapShrink R Nothing
-    --
-    -- move floating windo
+
+    -- mirror
+    , ("M-S-m", sendMessage $ MT.Toggle MIRROR)
+
+    --     --  floating windows  --
+
+    -- movmt
     , ("M-S-h", sendMessage (MoveLeft 45))
     , ("M-S-l", sendMessage (MoveRight 45))
     , ("M-S-k", bindByLayout [ ("My Float", sendMessage (MoveUp 45)), ("", windows W.swapUp) ] )
     , ("M-S-j", bindByLayout [ ("My Float", sendMessage (MoveDown 45)), ("", windows W.swapDown) ])
-    -- increase/decreasing floating window
+    -- resize
     , ("M-C-h", sendMessage (DecreaseLeft 45))
     , ("M-C-l", sendMessage (IncreaseRight 45))
     , ("M-C-k", sendMessage (IncreaseDown 45))
     , ("M-C-j", sendMessage (DecreaseUp 45))
-    , ("M-S-g", sendMessage $ SetGeometry (Rectangle 300 100 800 600))
-    -- move windows (previously overwritten by the move floating window keybs)
-    -- , ("M-S-<Up>", windows W.swapUp)
-    -- , ("M-S-<Down>", windows W.swapDown)
-    -- mirror
-    , ("M-S-m", sendMessage $ MT.Toggle MIRROR)
+    , ("M-S-g", sendMessage $ SetGeometry (Rectangle 200 100 500 300))
   ]
 
-utilityKeybs =
-  [ -- screenshot tools
-      ("<Print>", spawn "scrot -f ~/Documents/Pictures/Screenshots/%F-%H%M%S.png")
-    , ("S-<Print>", spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png")
+
+utilityKeybinds =
+  [
+      -- shell prompts
+      ("M-S-p", passPrompt myXPConfig)
+    , ("M-p", shellPrompt myXPConfig)
+      -- rename winodw
+    , ("C-S-r", renameFocusedPrompt myXPConfig) 
+    -- workspaceSelector
+    , ("M-<Tab>", myWorkspaceSelector myGSConfig)
+    , ("M-S-<Tab>", bringSelected def)
+    -- screenshot
+    , ("<Print>", execPrint)
+    , ("S-<Print>", execXclipPrint)
       -- screen lock
-    , ("<XF86ScreenSaver>", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa")
-    , ("M-S-C-s", spawn "i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa")
+    , ("<XF86ScreenSaver>", execLock)
+    , ("M-S-C-s", execLock)
       -- audio
     , ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-")
     , ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+")
-    , ("<XF86AudioMute>", spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
-      -- shell prompts
-    , ("M-S-p", passPrompt myXPConfig)
-    , ("M-p", shellPrompt myXPConfig)
-      -- rename winodw
-    , ("C-S-r", renameFocusedPrompt myXPConfig)
+    , ("<XF86AudioMute>",        spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
   ]
 
-miscKeybs =
+
+tempKeybinds =
   [ 
-  -- workspaceSelector
-    ("M-<Tab>", myWorkspaceSelector myGSConfig)
-  , ("M-S-<Tab>", bringSelected def)
-  -- toggle mic feedback
-  , ("M-C-m", spawn "sh -c 'ID=$(pactl list short modules | grep module-loopback | cut -f1 | head -n1); [ -n \"$ID\" ] && pactl unload-module \"$ID\" || pactl load-module module-loopback latency_msec=1'")
-  -- spawn stuff on aux
-  , ("<F2>", bindOn [("aux", do
+    -- spawn windows on aux
+    ("<F2>", bindOn [("aux", do
                           spawn "urxvt -e sh -c 'btop; bash'"
                           spawn "sleep 0.5; snow"
-                          spawn "sleep 1; xload")])
+                          spawn "sleep 1; xload")
+                    ])
+
+  -- toggle mic feedback
+  , ("M-C-m", spawn "sh -c 'ID=$(pactl list short modules | grep module-loopback | cut -f1 | head -n1); [ -n \"$ID\" ] && pactl unload-module \"$ID\" || pactl load-module module-loopback latency_msec=1'")
+
+  -- test
+  , ("M-C-d",
+    spawn "urxvt -name xmonad-debug -e watch -n 0.2 'cat /tmp/xmonad-debug'") -- test
   ]
+
 
 myRemovedKeys =
   [ "M-S-q", -- disable default exit
@@ -399,6 +485,3 @@ myRemovedKeys =
     "M-9",
     "M-S-9"
   ]
-
-moveAndFollow ws =
-  windows (W.shift ws)
