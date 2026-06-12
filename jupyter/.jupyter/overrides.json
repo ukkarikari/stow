@@ -1,0 +1,37 @@
+{
+  "@jupyterlab/markdownviewer-extension:plugin": {
+    "lineHeight": null,
+    "lineWidth": null,
+    "hideFrontMatter": true,
+    "renderTimeout": 1000,
+    "fontFamily": "Crisp",
+    "fontSize": 18
+  },
+  "@jupyterlab/extensionmanager-extension:plugin": {
+    "disclaimed": true
+  },
+  "@jupyterlab/apputils-extension:themes": {
+    "theme": "JupyterLab Light",
+    "adaptive-theme": false,
+    "preferred-light-theme": "JupyterLab Light",
+    "preferred-dark-theme": "JupyterLab Dark",
+    "theme-scrollbars": false,
+    "overrides": {
+      "code-font-family": "Terminus",
+      "ui-font-family": "Unifont",
+      "ui-font-size1": null,
+      "content-font-family": "Unifont"
+    }
+  },
+  "@jupyterlab/apputils-extension:notification": {
+    "fetchNews": "false"
+  },
+  "@axlair/jupyterlab_vim:plugin": {
+    "enabled": true,
+    "enabledInEditors": true,
+    "extraKeybindings": [],
+    "cmdModeKeys": {
+      "escToCmdMode": true
+    }
+  }
+}

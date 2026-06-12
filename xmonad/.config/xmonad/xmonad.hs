@@ -142,7 +142,8 @@ myLayouts =
     onWorkspace "web" webLayouts $
     onWorkspace "aux" auxLayouts $
     onWorkspace "research" researchLayouts $ 
-    onWorkspace "media" mediaLayouts 
+    onWorkspace "rdp" rdpLayouts $
+    onWorkspace "media" mediaLayouts $ 
     defaultLayout
 
 codeLayouts = boringWindows $
@@ -161,6 +162,10 @@ auxLayouts = boringWindows $
       spiral (9/10) 
   ||| myDecorate simplestFloat
        
+rdpLayouts = boringWindows $
+      myDecorate simplestFloat
+  ||| myDecorate Roledex
+
 researchLayouts = boringWindows $
       twoPaneThing 3 (1/2)
   ||| noBorders Simplest
@@ -170,8 +175,9 @@ mediaLayouts = boringWindows $
   ||| noBorders Simplest
   
 defaultLayout = boringWindows $
-  noBorders Simplest
+      noBorders Simplest
   ||| myDecorate simplestFloat
+
 
 
 -- =========================================================================
