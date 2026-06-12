@@ -4,7 +4,11 @@
 
 <br>
 
+personal strange xmonad configuration
+
 </div>
 
-personal strange xmonad configuration
+
+# components
+
 

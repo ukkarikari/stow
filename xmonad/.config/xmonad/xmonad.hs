@@ -453,6 +453,7 @@ utilityKeybinds =
     , ("<XF86AudioMute>",        spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
   ]
 
+
 tempKeybinds =
   [ 
     -- spawn windows on aux
