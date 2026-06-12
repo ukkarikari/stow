@@ -10,7 +10,7 @@ easy access configurations for personal use
 - mdlsp for browser markdown preview when opening .md files  
 - `}` and `{` paragraph movement keys
 
-![](./img/hx.png)
+![](./.img/hx.png)
 
 
 ## fonts
