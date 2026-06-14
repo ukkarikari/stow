@@ -27,6 +27,8 @@ import XMonad.Actions.GridSelect
 import XMonad.Actions.UpdatePointer
 import qualified XMonad.Actions.DynamicWorkspaces as DW
 import XMonad.Actions.WithAll
+import qualified XMonad.Util.ExtensibleState as XS
+import Data.Typeable
 
 import XMonad.Layout.Column
 import XMonad.Layout.HintedGrid
@@ -126,31 +128,23 @@ myConfig dzen =
 -- =========================================================================
 myWorkspaces :: [WorkspaceId]
 myWorkspaces =
-  [ "code",
+  [ 
     "web",
-    "code_alt",
-    "rdp",
-    "aux",
     "research",
+    "aux",
     "media"
   ]
 
 myLayouts =
   MT.mkToggle (MT.single MIRROR) $
-    onWorkspace "code" codeLayouts $
-    onWorkspace "code_alt" codeAltLayouts $
     onWorkspace "web" webLayouts $
     onWorkspace "aux" auxLayouts $
     onWorkspace "research" researchLayouts $ 
     onWorkspace "rdp" rdpLayouts $
     onWorkspace "media" mediaLayouts $ 
-    defaultLayout
+    projectLayout -- (dynamic workspace test) currently this fallback will be used for the 'project workspaces'
 
-codeLayouts = boringWindows $
-      twoPaneThing 2 (9/16)
-  ||| noBorders Simplest
-
-codeAltLayouts = boringWindows $
+projectLayout = boringWindows $
       twoPaneThing 2 (9/16)
   ||| noBorders Simplest
 
@@ -163,8 +157,8 @@ auxLayouts = boringWindows $
   ||| myDecorate simplestFloat
        
 rdpLayouts = boringWindows $
-      myDecorate simplestFloat
-  ||| myDecorate Roledex
+      roledexGapDeco
+  ||| myDecorate simplestFloat
 
 researchLayouts = boringWindows $
       twoPaneThing 3 (1/2)
@@ -174,10 +168,6 @@ mediaLayouts = boringWindows $
   roledexGapDeco
   ||| noBorders Simplest
   
-defaultLayout = boringWindows $
-      noBorders Simplest
-  ||| myDecorate simplestFloat
-
 
 
 -- =========================================================================
@@ -325,7 +315,7 @@ myGSConfig = def
   }
 
 
--- debug utility
+-- debug utility (WIP)
 myDebugLog :: X ()
 myDebugLog =
   withWindowSet $ \ws -> do
