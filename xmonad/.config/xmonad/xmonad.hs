@@ -135,7 +135,10 @@ myWorkspaces =
     "media"
   ]
 
+
+
 myLayouts =
+  MT.mkToggle (MT.single FLOATED) $
   MT.mkToggle (MT.single MIRROR) $
     onWorkspace "web" webLayouts $
     onWorkspace "aux" auxLayouts $
@@ -143,6 +146,7 @@ myLayouts =
     onWorkspace "rdp" rdpLayouts $
     onWorkspace "media" mediaLayouts $ 
     projectLayout -- (dynamic workspace test) currently this fallback will be used for the 'project workspaces'
+
 
 projectLayout = boringWindows $
       twoPaneThing 2 (9/16)
@@ -154,11 +158,9 @@ webLayouts = boringWindows $
 
 auxLayouts = boringWindows $
       spiral (9/10) 
-  ||| myDecorate simplestFloat
        
 rdpLayouts = boringWindows $
       roledexGapDeco
-  ||| myDecorate simplestFloat
 
 researchLayouts = boringWindows $
       twoPaneThing 3 (1/2)
@@ -190,6 +192,14 @@ roledexGapDeco =
        (reflectVert Roledex)
    )
 
+myFloat = 
+  myDecorate simplestFloat
+
+-- floating transformer for MultiToggle very cool 
+data FLOATED = FLOATED deriving (Read, Show, Eq, Typeable)
+
+instance MT.Transformer FLOATED Window where
+    transform FLOATED x k = k (boringWindows myFloat) (\_ -> x)
 
 -- =========================================================================
 --                                APPEARANCE  
@@ -456,6 +466,9 @@ windowKeybindss =
 
     -- mirror
     , ("M-S-m", sendMessage $ MT.Toggle MIRROR)
+    -- float
+    , ("M-S-f", sendMessage $ MT.Toggle FLOATED)
+
 
     --     --  floating windows  --
 
@@ -469,8 +482,8 @@ windowKeybindss =
     -- resize
     , ("M-C-h", sendMessage (DecreaseLeft 45))
     , ("M-C-l", sendMessage (IncreaseRight 45))
-    , ("M-C-k", sendMessage (IncreaseDown 45))
-    , ("M-C-j", sendMessage (DecreaseUp 45))
+    , ("M-C-k", sendMessage (DecreaseUp 45))
+    , ("M-C-j", sendMessage (IncreaseDown 45))
     , ("M-S-g", sendMessage $ SetGeometry (Rectangle 200 100 500 300))
   ]
 
@@ -488,10 +501,10 @@ utilityKeybinds =
     , ("M-<Tab>", myWorkspaceSelector myGSConfig)
     , ("M-S-<Tab>", bringSelected def)
 
-    -- new dynamic workspaces test
+    -- (dynamic workspaces test) prompt to create new workspace
     , ("M-S-n", workspacePrompt myXPConfig gotoWorkspace)
 
-    -- kill all workspace processes and remove workspace
+    -- (dynamic workspaces test) kill all workspace processes and remove workspace
     , ("M-S-<Backspace>", do 
                               killAll
                               DW.removeWorkspace
@@ -523,7 +536,7 @@ tempKeybinds =
   -- toggle mic feedback
   , ("M-C-m", execMicLoopback)
 
-  -- test
+  -- debug window test
   , ("M-C-d",
     spawn "urxvt -name xmonad-debug -e watch -n 0.2 'cat /tmp/xmonad-debug'") -- test
   ]
