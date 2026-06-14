@@ -25,6 +25,8 @@ import XMonad.Layout.SimpleDecoration
 
 import XMonad.Actions.GridSelect
 import XMonad.Actions.UpdatePointer
+import qualified XMonad.Actions.DynamicWorkspaces as DW
+import XMonad.Actions.WithAll
 
 import XMonad.Layout.Column
 import XMonad.Layout.HintedGrid
@@ -275,6 +277,21 @@ renameFocusedPrompt conf =
             safeSpawn "wmctrl"
                 ["-i", "-r", show w, "-T", title]
 
+
+-- (dynamic workspaces test)
+-- goes to workspace if it exists, creates a new one if it doesnt (maybe integrate inside gridSelect)
+gotoWorkspace :: WorkspaceId -> X ()
+gotoWorkspace ws = do
+  exists <- gets $
+      any ((==ws) . W.tag) . W.workspaces . windowset
+
+  if exists
+      then windows (W.greedyView ws)
+      else do
+          DW.addHiddenWorkspace ws
+          windows (W.greedyView ws)
+
+
 -- grid select for layouts
 myWorkspaceSelector :: GSConfig (WorkspaceId, Bool) -> X ()
 myWorkspaceSelector conf = do
@@ -480,6 +497,15 @@ utilityKeybinds =
     -- workspaceSelector
     , ("M-<Tab>", myWorkspaceSelector myGSConfig)
     , ("M-S-<Tab>", bringSelected def)
+
+    -- new dynamic workspaces test
+    , ("M-S-n", workspacePrompt myXPConfig gotoWorkspace)
+
+    -- kill all workspace processes and remove workspace
+    , ("M-S-<Backspace>", do 
+                              killAll
+                              DW.removeWorkspace
+    )
 
     -- screenshot
     , ("<Print>", execPrint)
