@@ -20,7 +20,7 @@ myWorkspaceSelector conf = do
   gridselect conf entries
     >>= flip whenJust (\(name, _) -> windows (W.greedyView name))
 
-
+-- theme
 myColorizer :: (WorkspaceId, Bool) -> Bool -> X (String, String)
 myColorizer (_, empty) active =
   return $

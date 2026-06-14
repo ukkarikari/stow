@@ -65,8 +65,6 @@ import XMonad.Prompt.Shell
 import XMonad.Prompt.Pass
 import XMonad.Prompt.Workspace
 
-import Config.GridSelect
-
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.InsertPosition
@@ -277,6 +275,39 @@ renameFocusedPrompt conf =
             safeSpawn "wmctrl"
                 ["-i", "-r", show w, "-T", title]
 
+-- grid select for layouts
+myWorkspaceSelector :: GSConfig (WorkspaceId, Bool) -> X ()
+myWorkspaceSelector conf = do
+  ws <- gets (W.workspaces . windowset)
+
+  let entries =
+        [ (W.tag w, (W.tag w, isNothing w))
+        | w <- ws
+        ]
+      isNothing w = W.stack w == Nothing
+
+  gridselect conf entries
+    >>= flip whenJust (\(name, _) -> windows (W.greedyView name))
+
+-- theme
+myColorizer :: (WorkspaceId, Bool) -> Bool -> X (String, String)
+myColorizer (_, empty) active =
+  return $
+    case (active, empty) of
+      (True, _)      -> ("#ffffff", "#000000")  -- selected
+      (False, True)  -> ("#222222", "#666666")  -- empty workspace
+      (False, False) -> ("#222222", "#ffffff")  -- non-empty workspace
+
+myGSConfig :: GSConfig (WorkspaceId, Bool)
+myGSConfig = def
+  { gs_cellheight = 50
+  , gs_cellwidth  = 180
+  , gs_cellpadding = 10
+  , gs_font       = "xft:Terminus:size=11"
+  , gs_colorizer  = myColorizer
+  }
+
+
 -- debug utility
 myDebugLog :: X ()
 myDebugLog =
@@ -442,14 +473,18 @@ utilityKeybinds =
       -- shell prompts
       ("M-S-p", passPrompt myXPConfig)
     , ("M-p", shellPrompt myXPConfig)
+
       -- rename winodw
     , ("C-S-r", renameFocusedPrompt myXPConfig) 
+
     -- workspaceSelector
     , ("M-<Tab>", myWorkspaceSelector myGSConfig)
     , ("M-S-<Tab>", bringSelected def)
+
     -- screenshot
     , ("<Print>", execPrint)
     , ("S-<Print>", execXclipPrint)
+
       -- screen lock
     , ("<XF86ScreenSaver>", execLock)
     , ("M-S-C-s", execLock)
