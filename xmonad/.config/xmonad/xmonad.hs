@@ -502,7 +502,7 @@ utilityKeybinds =
     , ("M-S-<Tab>", bringSelected def)
 
     -- (dynamic workspaces test) prompt to create new workspace
-    , ("M-S-n", workspacePrompt myXPConfig gotoWorkspace)
+    , ("C-M-n", workspacePrompt myXPConfig gotoWorkspace)
 
     -- (dynamic workspaces test) kill all workspace processes and remove workspace
     , ("M-S-<Backspace>", do 
@@ -517,6 +517,7 @@ utilityKeybinds =
       -- screen lock
     , ("<XF86ScreenSaver>", execLock)
     , ("M-S-C-s", execLock)
+
       -- audio
     , ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-")
     , ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+")
@@ -527,7 +528,7 @@ utilityKeybinds =
 tempKeybinds =
   [ 
     -- spawn windows on aux
-    ("<F2>", bindOn [("aux", do
+    ("M-<F2>", bindOn [("aux", do
                           spawn "urxvt -e sh -c 'btop; bash'"
                           spawn "sleep 0.5; snow"
                           spawn "sleep 1; xload")
