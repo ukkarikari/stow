@@ -25,6 +25,10 @@ import XMonad.Layout.SimpleDecoration
 
 import XMonad.Actions.GridSelect
 import XMonad.Actions.UpdatePointer
+import qualified XMonad.Actions.DynamicWorkspaces as DW
+import XMonad.Actions.WithAll
+import qualified XMonad.Util.ExtensibleState as XS
+import Data.Typeable
 
 import XMonad.Layout.Column
 import XMonad.Layout.HintedGrid
@@ -64,8 +68,6 @@ import XMonad.Prompt.Input
 import XMonad.Prompt.Shell
 import XMonad.Prompt.Pass
 import XMonad.Prompt.Workspace
-
-import Config.GridSelect
 
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
@@ -126,30 +128,27 @@ myConfig dzen =
 -- =========================================================================
 myWorkspaces :: [WorkspaceId]
 myWorkspaces =
-  [ "code",
+  [ 
     "web",
-    "code_alt",
-    "rdp",
-    "aux",
     "research",
+    "aux",
     "media"
   ]
 
+
+
 myLayouts =
+  MT.mkToggle (MT.single FLOATED) $
   MT.mkToggle (MT.single MIRROR) $
-    onWorkspace "code" codeLayouts $
-    onWorkspace "code_alt" codeAltLayouts $
     onWorkspace "web" webLayouts $
     onWorkspace "aux" auxLayouts $
     onWorkspace "research" researchLayouts $ 
-    onWorkspace "media" mediaLayouts 
-    defaultLayout
+    onWorkspace "rdp" rdpLayouts $
+    onWorkspace "media" mediaLayouts $ 
+    projectLayout -- (dynamic workspace test) currently this fallback will be used for the 'project workspaces'
 
-codeLayouts = boringWindows $
-      twoPaneThing 2 (9/16)
-  ||| noBorders Simplest
 
-codeAltLayouts = boringWindows $
+projectLayout = boringWindows $
       twoPaneThing 2 (9/16)
   ||| noBorders Simplest
 
@@ -159,8 +158,10 @@ webLayouts = boringWindows $
 
 auxLayouts = boringWindows $
       spiral (9/10) 
-  ||| myDecorate simplestFloat
        
+rdpLayouts = boringWindows $
+      roledexGapDeco
+
 researchLayouts = boringWindows $
       twoPaneThing 3 (1/2)
   ||| noBorders Simplest
@@ -169,9 +170,6 @@ mediaLayouts = boringWindows $
   roledexGapDeco
   ||| noBorders Simplest
   
-defaultLayout = boringWindows $
-  noBorders Simplest
-  ||| myDecorate simplestFloat
 
 
 -- =========================================================================
@@ -194,6 +192,14 @@ roledexGapDeco =
        (reflectVert Roledex)
    )
 
+myFloat = 
+  myDecorate simplestFloat
+
+-- floating transformer for MultiToggle very cool 
+data FLOATED = FLOATED deriving (Read, Show, Eq, Typeable)
+
+instance MT.Transformer FLOATED Window where
+    transform FLOATED x k = k (boringWindows myFloat) (\_ -> x)
 
 -- =========================================================================
 --                                APPEARANCE  
@@ -271,7 +277,55 @@ renameFocusedPrompt conf =
             safeSpawn "wmctrl"
                 ["-i", "-r", show w, "-T", title]
 
--- debug utility
+
+-- (dynamic workspaces test)
+-- goes to workspace if it exists, creates a new one if it doesnt (maybe integrate inside gridSelect)
+gotoWorkspace :: WorkspaceId -> X ()
+gotoWorkspace ws = do
+  exists <- gets $
+      any ((==ws) . W.tag) . W.workspaces . windowset
+
+  if exists
+      then windows (W.greedyView ws)
+      else do
+          DW.addHiddenWorkspace ws
+          windows (W.greedyView ws)
+
+
+-- grid select for layouts
+myWorkspaceSelector :: GSConfig (WorkspaceId, Bool) -> X ()
+myWorkspaceSelector conf = do
+  ws <- gets (W.workspaces . windowset)
+
+  let entries =
+        [ (W.tag w, (W.tag w, isNothing w))
+        | w <- ws
+        ]
+      isNothing w = W.stack w == Nothing
+
+  gridselect conf entries
+    >>= flip whenJust (\(name, _) -> windows (W.greedyView name))
+
+-- theme
+myColorizer :: (WorkspaceId, Bool) -> Bool -> X (String, String)
+myColorizer (_, empty) active =
+  return $
+    case (active, empty) of
+      (True, _)      -> ("#ffffff", "#000000")  -- selected
+      (False, True)  -> ("#222222", "#666666")  -- empty workspace
+      (False, False) -> ("#222222", "#ffffff")  -- non-empty workspace
+
+myGSConfig :: GSConfig (WorkspaceId, Bool)
+myGSConfig = def
+  { gs_cellheight = 50
+  , gs_cellwidth  = 180
+  , gs_cellpadding = 10
+  , gs_font       = "xft:Terminus:size=11"
+  , gs_colorizer  = myColorizer
+  }
+
+
+-- debug utility (WIP)
 myDebugLog :: X ()
 myDebugLog =
   withWindowSet $ \ws -> do
@@ -412,6 +466,9 @@ windowKeybindss =
 
     -- mirror
     , ("M-S-m", sendMessage $ MT.Toggle MIRROR)
+    -- float
+    , ("M-S-f", sendMessage $ MT.Toggle FLOATED)
+
 
     --     --  floating windows  --
 
@@ -425,8 +482,8 @@ windowKeybindss =
     -- resize
     , ("M-C-h", sendMessage (DecreaseLeft 45))
     , ("M-C-l", sendMessage (IncreaseRight 45))
-    , ("M-C-k", sendMessage (IncreaseDown 45))
-    , ("M-C-j", sendMessage (DecreaseUp 45))
+    , ("M-C-k", sendMessage (DecreaseUp 45))
+    , ("M-C-j", sendMessage (IncreaseDown 45))
     , ("M-S-g", sendMessage $ SetGeometry (Rectangle 200 100 500 300))
   ]
 
@@ -436,17 +493,31 @@ utilityKeybinds =
       -- shell prompts
       ("M-S-p", passPrompt myXPConfig)
     , ("M-p", shellPrompt myXPConfig)
+
       -- rename winodw
     , ("C-S-r", renameFocusedPrompt myXPConfig) 
+
     -- workspaceSelector
     , ("M-<Tab>", myWorkspaceSelector myGSConfig)
     , ("M-S-<Tab>", bringSelected def)
+
+    -- (dynamic workspaces test) prompt to create new workspace
+    , ("C-M-n", workspacePrompt myXPConfig gotoWorkspace)
+
+    -- (dynamic workspaces test) kill all workspace processes and remove workspace
+    , ("M-S-<Backspace>", do 
+                              killAll
+                              DW.removeWorkspace
+    )
+
     -- screenshot
     , ("<Print>", execPrint)
     , ("S-<Print>", execXclipPrint)
+
       -- screen lock
     , ("<XF86ScreenSaver>", execLock)
     , ("M-S-C-s", execLock)
+
       -- audio
     , ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-")
     , ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+")
@@ -457,7 +528,7 @@ utilityKeybinds =
 tempKeybinds =
   [ 
     -- spawn windows on aux
-    ("<F2>", bindOn [("aux", do
+    ("M-<F2>", bindOn [("aux", do
                           spawn "urxvt -e sh -c 'btop; bash'"
                           spawn "sleep 0.5; snow"
                           spawn "sleep 1; xload")
@@ -466,7 +537,7 @@ tempKeybinds =
   -- toggle mic feedback
   , ("M-C-m", execMicLoopback)
 
-  -- test
+  -- debug window test
   , ("M-C-d",
     spawn "urxvt -name xmonad-debug -e watch -n 0.2 'cat /tmp/xmonad-debug'") -- test
   ]

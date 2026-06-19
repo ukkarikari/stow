@@ -1,0 +1,55 @@
+{
+  "catppuccin_jupyterlab:plugin": {
+    "brandColor": "blue",
+    "accentColor": "blue"
+  },
+  "@jupyterlab/markdownviewer-extension:plugin": {
+    "lineHeight": null,
+    "lineWidth": null,
+    "hideFrontMatter": true,
+    "renderTimeout": 1000,
+    "fontFamily": "Crisp",
+    "fontSize": 18
+  },
+  "@jupyterlab/extensionmanager-extension:plugin": {
+    "disclaimed": true
+  },
+  "@jupyterlab/apputils-extension:themes": {
+    "adaptive-theme": false,
+    "overrides": {
+      "code-font-family": "Terminus",
+      "ui-font-family": "Terminus",
+      "ui-font-size1": null,
+      "content-font-family": "Terminus"
+    },
+    "preferred-dark-theme": "JupyterLab Dark",
+    "preferred-light-theme": "JupyterLab Light",
+    "theme": "Catppuccin Latte",
+    "theme-scrollbars": false
+  },
+  "@jupyterlab/apputils-extension:notification": {
+    "fetchNews": "false"
+  },
+  "@jupyterlab/lsp-extension:plugin": {
+    "languageServers": {}
+  },
+  "@jupyterlab/fileeditor-extension:plugin": {
+    "editorConfig": {
+      "customStyles": {
+        "fontFamily": null,
+        "fontSize": 15,
+        "lineHeight": null
+      }
+    },
+    "scrollPastEnd": true,
+    "toolbar": []
+  },
+  "@axlair/jupyterlab_vim:plugin": {
+    "enabled": true,
+    "enabledInEditors": true,
+    "extraKeybindings": [],
+    "cmdModeKeys": {
+      "escToCmdMode": true
+    }
+  }
+}
