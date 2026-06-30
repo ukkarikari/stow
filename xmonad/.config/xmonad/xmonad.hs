@@ -161,6 +161,7 @@ auxLayouts = boringWindows $
        
 rdpLayouts = boringWindows $
       roledexGapDeco
+  ||| noBorders (tabbedBottom shrinkText myTabTheme)
 
 researchLayouts = boringWindows $
       twoPaneThing 3 (1/2)
@@ -188,12 +189,12 @@ twoPaneThing win_n ratio =
  
 roledexGapDeco =
   myDecorate 
-   ( gaps [(L, 30), (R, 30), (U, 10), (D, 10)]
+   ( gaps [(L, 60), (R, 60), (U, 10), (D, 10)]
        (reflectVert Roledex)
    )
 
 myFloat = 
-  myDecorate simplestFloat
+  mouseResize $ myDecorate simplestFloat
 
 -- floating transformer for MultiToggle very cool 
 data FLOATED = FLOATED deriving (Read, Show, Eq, Typeable)
@@ -306,23 +307,64 @@ myWorkspaceSelector conf = do
   gridselect conf entries
     >>= flip whenJust (\(name, _) -> windows (W.greedyView name))
 
--- theme
-myColorizer :: (WorkspaceId, Bool) -> Bool -> X (String, String)
-myColorizer (_, empty) active =
+
+-- workspace gridselect colorizer
+myWorkspaceColorizer :: (WorkspaceId, Bool) -> Bool -> X (String, String)
+myWorkspaceColorizer (_, empty) active =
   return $
     case (active, empty) of
       (True, _)      -> ("#ffffff", "#000000")  -- selected
       (False, True)  -> ("#222222", "#666666")  -- empty workspace
       (False, False) -> ("#222222", "#ffffff")  -- non-empty workspace
 
-myGSConfig :: GSConfig (WorkspaceId, Bool)
-myGSConfig = def
-  { gs_cellheight = 50
-  , gs_cellwidth  = 180
-  , gs_cellpadding = 10
-  , gs_font       = "xft:Terminus:size=11"
-  , gs_colorizer  = myColorizer
+
+-- workspace gridselect theme
+myWorkspaceGSConfig :: GSConfig (WorkspaceId, Bool)
+myWorkspaceGSConfig = def
+  { gs_cellheight   = 50
+  , gs_cellwidth    = 180
+  , gs_cellpadding  = 10
+  , gs_font         = "xft:Terminus:size=11"
+  , gs_colorizer    = myWorkspaceColorizer
   }
+
+
+-- window gridselect colorizer
+myWindowColorizer :: Window -> Bool -> X (String, String)
+myWindowColorizer =
+  colorRangeFromClassName
+    (0x22,0x22,0x22)
+    (0x66,0x66,0x66)
+    (0x44,0xAA,0xCC)
+    (0xBB,0xBB,0xBB)
+    (0x00,0x00,0x00)
+
+
+-- bringSelected theme
+myWindowGSConfig :: GSConfig Window
+myWindowGSConfig = def
+  { gs_cellheight   = 50
+  , gs_cellwidth    = 200
+  , gs_cellpadding  = 10
+  , gs_font         = "xft:Terminus:size=11"
+  , gs_colorizer    = myWindowColorizer
+  }
+
+
+-- keyboard layout toggle prompt
+keyboardLayoutPrompt :: X ()
+keyboardLayoutPrompt =
+  inputPrompt myXPConfig "keyboard layout (us/br)"
+    ?+ \choice ->
+      case choice of
+        "us" ->
+          spawn "setxkbmap -layout us"
+
+        "br" ->
+          spawn "setxkbmap -layout br -variant thinkpad"
+
+        _ ->
+          return ()
 
 
 -- debug utility (WIP)
@@ -498,8 +540,11 @@ utilityKeybinds =
     , ("C-S-r", renameFocusedPrompt myXPConfig) 
 
     -- workspaceSelector
-    , ("M-<Tab>", myWorkspaceSelector myGSConfig)
-    , ("M-S-<Tab>", bringSelected def)
+    , ("M-<Tab>", myWorkspaceSelector myWorkspaceGSConfig)
+    , ("M-S-<Tab>", bringSelected myWindowGSConfig)
+
+    -- change layout
+    , ("C-<Space>", keyboardLayoutPrompt)
 
     -- (dynamic workspaces test) prompt to create new workspace
     , ("C-M-n", workspacePrompt myXPConfig gotoWorkspace)
