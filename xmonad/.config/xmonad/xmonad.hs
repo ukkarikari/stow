@@ -130,9 +130,7 @@ myWorkspaces :: [WorkspaceId]
 myWorkspaces =
   [ 
     "web",
-    "research",
-    "aux",
-    "media"
+    "remote"
   ]
 
 
@@ -143,8 +141,9 @@ myLayouts =
     onWorkspace "web" webLayouts $
     onWorkspace "aux" auxLayouts $
     onWorkspace "research" researchLayouts $ 
-    onWorkspace "rdp" rdpLayouts $
+    onWorkspace "remote" remoteLayouts $
     onWorkspace "media" mediaLayouts $ 
+    onWorkspace "temp" tempLayouts $ 
     projectLayout -- (dynamic workspace test) currently this fallback will be used for the 'project workspaces'
 
 
@@ -157,9 +156,10 @@ webLayouts = boringWindows $
    ||| noBorders (tabbedBottom shrinkText myTabTheme)
 
 auxLayouts = boringWindows $
-      spiral (9/10) 
+      -- spiral (9/10)
+      roledexGapDeco
        
-rdpLayouts = boringWindows $
+remoteLayouts = boringWindows $
       roledexGapDeco
   ||| noBorders (tabbedBottom shrinkText myTabTheme)
 
@@ -168,9 +168,12 @@ researchLayouts = boringWindows $
   ||| noBorders Simplest
 
 mediaLayouts = boringWindows $
-  roledexGapDeco
+  noBorders (tabbedBottom shrinkText myTabTheme)
   ||| noBorders Simplest
   
+tempLayouts = 
+      Full 
+  ||| noBorders Simplest
 
 
 -- =========================================================================
@@ -550,7 +553,7 @@ utilityKeybinds =
     , ("C-M-n", workspacePrompt myXPConfig gotoWorkspace)
 
     -- (dynamic workspaces test) kill all workspace processes and remove workspace
-    , ("M-S-<Backspace>", do 
+    , ("C-M-<Backspace>", do 
                               killAll
                               DW.removeWorkspace
     )
