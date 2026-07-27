@@ -1,5 +1,6 @@
 
 import Data.Ratio
+import Data.List (find)
 import System.IO (hPutStrLn)
 import System.IO (Handle)
 
@@ -17,6 +18,7 @@ import XMonad.Layout.StackTile
 import XMonad.Layout.Tabbed
 import XMonad.Layout.SimpleFloat
 import XMonad.Layout.SimplestFloat
+import XMonad.Layout.BinaryColumn
 
 import XMonad.Layout.NoFrillsDecoration
 import XMonad.Layout.DecorationMadness
@@ -129,51 +131,39 @@ myConfig dzen =
 myWorkspaces :: [WorkspaceId]
 myWorkspaces =
   [ 
-    "web",
+    "xm", -- TEMP! change later!
+    "temp",
     "remote"
   ]
 
 
-
 myLayouts =
-  MT.mkToggle (MT.single FLOATED) $
+  MT.mkToggle (MT.single LAYOVERWRITE) $
   MT.mkToggle (MT.single MIRROR) $
     onWorkspace "web" webLayouts $
-    onWorkspace "aux" auxLayouts $
-    onWorkspace "research" researchLayouts $ 
     onWorkspace "remote" remoteLayouts $
-    onWorkspace "media" mediaLayouts $ 
     onWorkspace "temp" tempLayouts $ 
     projectLayout -- (dynamic workspace test) currently this fallback will be used for the 'project workspaces'
 
 
+
+--  --- this is the default layout for new workspaces (!) ---
 projectLayout = boringWindows $
-      twoPaneThing 2 (9/16)
+      myFloat
   ||| noBorders Simplest
+-- ----------------------------------------------------------
+
 
 webLayouts = boringWindows $
-       twoPaneThing 2 (1/2)
-   ||| noBorders (tabbedBottom shrinkText myTabTheme)
+       noBorders (tabbedBottom shrinkText myTabTheme)
+   ||| twoPaneThing 2 (1/2)
 
-auxLayouts = boringWindows $
-      -- spiral (9/10)
-      roledexGapDeco
-       
 remoteLayouts = boringWindows $
       roledexGapDeco
   ||| noBorders (tabbedBottom shrinkText myTabTheme)
-
-researchLayouts = boringWindows $
-      twoPaneThing 3 (1/2)
-  ||| noBorders Simplest
-
-mediaLayouts = boringWindows $
-  noBorders (tabbedBottom shrinkText myTabTheme)
-  ||| noBorders Simplest
-  
+ 
 tempLayouts = 
-      Full 
-  ||| noBorders Simplest
+  noBorders Simplest
 
 
 -- =========================================================================
@@ -182,11 +172,11 @@ tempLayouts =
 
 {-# ANN myDecorate ("HLint: ignore Eta reduce" :: String) #-}
 
--- helpers
-myDecorate l = -- the l in this decorate function is to fix the 'a0' ambiguity error
-  noFrillsDeco shrinkText myTabTheme l
+-- custom layout definitions
 
--- my layout definitions
+myFloat = 
+  mouseResize $ maxMagnifierOff (myDecorate simplestFloat)
+
 twoPaneThing win_n ratio = 
   limitWindows win_n ( noBorders (magnifierczOff' 1.3 (ResizableTall 1 (3 / 100) ratio [])) ) 
  
@@ -196,14 +186,19 @@ roledexGapDeco =
        (reflectVert Roledex)
    )
 
-myFloat = 
-  mouseResize $ myDecorate simplestFloat
 
--- floating transformer for MultiToggle very cool 
-data FLOATED = FLOATED deriving (Read, Show, Eq, Typeable)
+-- decoration helper
+myDecorate l = -- the l in this decorate function is to fix the 'a0' ambiguity error
+  noFrillsDeco shrinkText myTabTheme l
 
-instance MT.Transformer FLOATED Window where
-    transform FLOATED x k = k (boringWindows myFloat) (\_ -> x)
+-- global layout overwrite toggle
+data LAYOVERWRITE = LAYOVERWRITE deriving (Read, Show, Eq, Typeable)
+
+-- multi toggle that overwrites the current layout with another
+instance MT.Transformer LAYOVERWRITE Window where
+    transform LAYOVERWRITE x k = k (boringWindows $ (BinaryColumn 1.0 32)) (\_ -> x)
+
+
 
 -- =========================================================================
 --                                APPEARANCE  
@@ -418,6 +413,69 @@ myDebugLog =
           ++ stackLines
 
 
+-- ---- FLOAT WEIRD THINGS ---
+
+-- state for float
+newtype FloatPreset = FloatPreset Int
+    deriving (Read, Show)
+
+instance ExtensionClass FloatPreset where
+    initialValue = FloatPreset 0
+
+-- data types
+newtype GeometryPreset = GeometryPreset Int
+    deriving (Read, Show)
+
+instance ExtensionClass GeometryPreset where
+    initialValue = GeometryPreset 0
+
+-- kind of emulation of RationalRect
+centeredRect :: Rational -> Rational -> Rectangle -> Rectangle
+centeredRect wf hf (Rectangle sx sy sw sh) =
+    let sw' = fromIntegral sw :: Rational
+        sh' = fromIntegral sh :: Rational
+
+        w = floor (sw' * wf)
+        h = floor (sh' * hf)
+
+        x = fromIntegral sx + (fromIntegral sw - w) `div` 2
+        y = fromIntegral sy + (fromIntegral sh - h) `div` 2
+    in Rectangle
+        (fromIntegral x)
+        (fromIntegral y)
+        (fromIntegral w)
+        (fromIntegral h)
+
+-- presets
+small  = centeredRect 0.5 0.45
+vertical = centeredRect 0.45 0.85
+large  = centeredRect 0.80 0.75
+
+-- presets for floating window sizes
+presets :: [Rectangle->Rectangle]
+presets =
+    [ small
+    , vertical
+    , large
+    ]
+
+-- cycle thru geoms cos im not using the xm floating layer
+cycleGeometry :: X ()
+cycleGeometry = do
+    GeometryPreset i <- XS.get
+
+    ws <- gets windowset
+    let screen =
+            screenRect
+          . W.screenDetail
+          . W.current
+          $ ws
+
+    sendMessage $ SetGeometry ((presets !! i) screen)
+
+    XS.put $ GeometryPreset ((i + 1) `mod` length presets)
+
+
 -- =========================================================================
 --                                    HOOKS
 -- =========================================================================
@@ -456,7 +514,6 @@ myManageHook =
 
 -- -------  log hook  ---------
 myLogHook dzen = do
-    refocusLastLogHook
     updatePointer (0.5, 0.5) (0, 0)
     myDebugLog 
     dynamicLogWithPP (myPP dzen)
@@ -511,8 +568,8 @@ windowKeybindss =
 
     -- mirror
     , ("M-S-m", sendMessage $ MT.Toggle MIRROR)
-    -- float
-    , ("M-S-f", sendMessage $ MT.Toggle FLOATED)
+    -- layout overwrite
+    , ("M-S-o", sendMessage $ MT.Toggle LAYOVERWRITE)
 
 
     --     --  floating windows  --
@@ -520,16 +577,17 @@ windowKeybindss =
     -- movmt
     , ("M-S-h", sendMessage (MoveLeft 45))
     , ("M-S-l", sendMessage (MoveRight 45))
-    , ("M-S-k", bindByLayout [ ("NoFrillsDeco SimplestFloat", sendMessage (MoveUp 45)),
+    , ("M-S-k", bindByLayout [ ("Magnifier (off) NoFrillsDeco SimplestFloat", sendMessage (MoveUp 45)),
                                ("", windows W.swapUp) ] )
-    , ("M-S-j", bindByLayout [ ("NoFrillsDeco SimplestFloat", sendMessage (MoveDown 45)),
+    , ("M-S-j", bindByLayout [ ("Magnifier (off) NoFrillsDeco SimplestFloat", sendMessage (MoveDown 45)),
                                ("", windows W.swapDown) ])
     -- resize
     , ("M-C-h", sendMessage (DecreaseLeft 45))
     , ("M-C-l", sendMessage (IncreaseRight 45))
     , ("M-C-k", sendMessage (DecreaseUp 45))
     , ("M-C-j", sendMessage (IncreaseDown 45))
-    , ("M-S-g", sendMessage $ SetGeometry (Rectangle 200 100 500 300))
+    -- , ("M-S-g", sendMessage $ SetGeometry (Rectangle 200 100 500 300))
+   , ("M-S-g", cycleGeometry)
   ]
 
 
