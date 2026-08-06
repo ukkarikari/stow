@@ -1,6 +1,7 @@
 
 import Data.Ratio
 import Data.List (find)
+import Data.Typeable
 import System.IO (hPutStrLn)
 import System.IO (Handle)
 
@@ -30,7 +31,7 @@ import XMonad.Actions.UpdatePointer
 import qualified XMonad.Actions.DynamicWorkspaces as DW
 import XMonad.Actions.WithAll
 import qualified XMonad.Util.ExtensibleState as XS
-import Data.Typeable
+import XMonad.Actions.WindowMenu
 
 import XMonad.Layout.Column
 import XMonad.Layout.HintedGrid
@@ -131,9 +132,8 @@ myConfig dzen =
 myWorkspaces :: [WorkspaceId]
 myWorkspaces =
   [ 
-    "xm", -- TEMP! change later!
-    "temp",
-    "remote"
+    "audio",
+    "reading"
   ]
 
 
@@ -151,12 +151,13 @@ myLayouts =
 projectLayout = boringWindows $
       myFloat
   ||| noBorders Simplest
+  ||| twoPaneThing 2 (1/2)
 -- ----------------------------------------------------------
 
 
 webLayouts = boringWindows $
        noBorders (tabbedBottom shrinkText myTabTheme)
-   ||| twoPaneThing 2 (1/2)
+   -- ||| twoPaneThing 2 (1/2)
 
 remoteLayouts = boringWindows $
       roledexGapDeco
@@ -186,7 +187,13 @@ roledexGapDeco =
        (reflectVert Roledex)
    )
 
+theTape =
+  myDecorate
+   ( gaps [(L, 20), (R, 20), (U, 175), (D, 175)]
+        (Mirror (BinaryColumn 0.0 32))
+   )
 
+  
 -- decoration helper
 myDecorate l = -- the l in this decorate function is to fix the 'a0' ambiguity error
   noFrillsDeco shrinkText myTabTheme l
@@ -196,7 +203,7 @@ data LAYOVERWRITE = LAYOVERWRITE deriving (Read, Show, Eq, Typeable)
 
 -- multi toggle that overwrites the current layout with another
 instance MT.Transformer LAYOVERWRITE Window where
-    transform LAYOVERWRITE x k = k (boringWindows $ (BinaryColumn 1.0 32)) (\_ -> x)
+    transform LAYOVERWRITE x k = k (boringWindows $ theTape ) (\_ -> x)
 
 
 
@@ -289,6 +296,15 @@ gotoWorkspace ws = do
       else do
           DW.addHiddenWorkspace ws
           windows (W.greedyView ws)
+          initializeWorkspace ws
+
+-- init for starting workspace specific applications
+initializeWorkspace :: WorkspaceId -> X()
+initializeWorkspace "mail" =
+  spawn "betterbird"
+
+initializeWorkspace _ =
+  pure ()
 
 
 -- grid select for layouts
@@ -603,6 +619,7 @@ utilityKeybinds =
     -- workspaceSelector
     , ("M-<Tab>", myWorkspaceSelector myWorkspaceGSConfig)
     , ("M-S-<Tab>", bringSelected myWindowGSConfig)
+    , ("M-C-<Space>", windowMenu)
 
     -- change layout
     , ("C-<Space>", keyboardLayoutPrompt)
