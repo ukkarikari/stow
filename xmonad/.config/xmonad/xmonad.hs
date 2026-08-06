@@ -504,12 +504,17 @@ myStartupHook = do
   spawnOnce "redshift -r -l manual"
   mapM_
     spawnOnce
-    [ -- lock xss cmd
-    "xss-lock 'i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa'",
-    "pkill picom ; picom --backend glx --fading --fade-delta 2 --config $HOME/.config/picom/picom-config"
+    [
+    -- lock xss cmd
+    "xss-lock 'i3lock -c 00000022 --verif-font=Unifont --wrong-font=Unifont --ring-color ffffff20 --inside-color 00000000 --line-color 00000000 --keyhl-color ffffffaa'"
+
+    , "pkill picom ; picom --backend glx --fading --fade-delta 2 --config $HOME/.config/picom/picom-config"
+
       --    TODO edit the wpp src and change this botch
       -- , "$HOME/.local/bin/wppsnow"
       -- , "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1440 900 windowmove 0 0"
+
+    , "xrdb -merge $HOME/.Xresources"
     ]
 
 
