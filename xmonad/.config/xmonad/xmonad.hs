@@ -48,6 +48,7 @@ import XMonad.Layout.AutoMaster
 import XMonad.Layout.Reflect
 import XMonad.Layout.CenteredMaster
 import XMonad.Layout.Spiral
+import XMonad.Layout.LayoutBuilder
 
 import XMonad.Actions.PerLayoutKeys
 import XMonad.Actions.PerWorkspaceKeys
@@ -133,7 +134,7 @@ myWorkspaces :: [WorkspaceId]
 myWorkspaces =
   [ 
     "audio",
-    "reading"
+    "network"
   ]
 
 
@@ -151,7 +152,7 @@ myLayouts =
 projectLayout = boringWindows $
       myFloat
   ||| noBorders Simplest
-  ||| twoPaneThing 2 (1/2)
+  ||| tabbedSplit
 -- ----------------------------------------------------------
 
 
@@ -162,9 +163,11 @@ webLayouts = boringWindows $
 remoteLayouts = boringWindows $
       roledexGapDeco
   ||| noBorders (tabbedBottom shrinkText myTabTheme)
+  -- ||| myFloat
  
-tempLayouts = 
-  noBorders Simplest
+tempLayouts = boringWindows $
+      myFloat
+  ||| noBorders Simplest
 
 
 -- =========================================================================
@@ -175,8 +178,10 @@ tempLayouts =
 
 -- custom layout definitions
 
+myFloatString = "NoFrillsDeco Magnifier (off) SimplestFloat"
+
 myFloat = 
-  mouseResize $ maxMagnifierOff (myDecorate simplestFloat)
+  mouseResize $ myDecorate ( magnifierxyOff 0.0 0.0 simplestFloat)
 
 twoPaneThing win_n ratio = 
   limitWindows win_n ( noBorders (magnifierczOff' 1.3 (ResizableTall 1 (3 / 100) ratio [])) ) 
@@ -193,6 +198,9 @@ theTape =
         (Mirror (BinaryColumn 0.0 32))
    )
 
+tabbedSplit =    layoutN 1 (relBox 0 0 0.5 1) (Just $ relBox 0 0 1 1) Full
+           $ layoutAll (relBox 0.5 0.0 1 1) (tabbedBottom shrinkText myTabTheme) 
+          
   
 -- decoration helper
 myDecorate l = -- the l in this decorate function is to fix the 'a0' ambiguity error
@@ -598,9 +606,9 @@ windowKeybindss =
     -- movmt
     , ("M-S-h", sendMessage (MoveLeft 45))
     , ("M-S-l", sendMessage (MoveRight 45))
-    , ("M-S-k", bindByLayout [ ("Magnifier (off) NoFrillsDeco SimplestFloat", sendMessage (MoveUp 45)),
+    , ("M-S-k", bindByLayout [ (myFloatString, sendMessage (MoveUp 45)),
                                ("", windows W.swapUp) ] )
-    , ("M-S-j", bindByLayout [ ("Magnifier (off) NoFrillsDeco SimplestFloat", sendMessage (MoveDown 45)),
+    , ("M-S-j", bindByLayout [ (myFloatString, sendMessage (MoveDown 45)),
                                ("", windows W.swapDown) ])
     -- resize
     , ("M-C-h", sendMessage (DecreaseLeft 45))
