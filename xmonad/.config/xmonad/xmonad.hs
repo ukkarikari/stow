@@ -49,6 +49,7 @@ import XMonad.Layout.Reflect
 import XMonad.Layout.CenteredMaster
 import XMonad.Layout.Spiral
 import XMonad.Layout.LayoutBuilder
+import qualified XMonad.Layout.ToggleLayouts as TL
 
 import XMonad.Actions.PerLayoutKeys
 import XMonad.Actions.PerWorkspaceKeys
@@ -150,9 +151,10 @@ myLayouts =
 
 --  --- this is the default layout for new workspaces (!) ---
 projectLayout = boringWindows $
-      myFloat
-  ||| noBorders Simplest
-  ||| tabbedSplit
+      TL.toggleLayouts
+      (noBorders Simplest
+       ||| tabbedSplit)
+      (myFloat ||| noBorders Simplest)
 -- ----------------------------------------------------------
 
 
@@ -181,7 +183,7 @@ tempLayouts = boringWindows $
 myFloatString = "NoFrillsDeco Magnifier (off) SimplestFloat"
 
 myFloat = 
-  mouseResize $ myDecorate ( magnifierxyOff 0.0 0.0 simplestFloat)
+  mouseResize $ myDecorate ( magnifierxyOff 0.5 1.0 simplestFloat)
 
 twoPaneThing win_n ratio = 
   limitWindows win_n ( noBorders (magnifierczOff' 1.3 (ResizableTall 1 (3 / 100) ratio [])) ) 
@@ -199,7 +201,7 @@ theTape =
    )
 
 tabbedSplit =    layoutN 1 (relBox 0 0 0.5 1) (Just $ relBox 0 0 1 1) Full
-           $ layoutAll (relBox 0.5 0.0 1 1) (tabbedBottom shrinkText myTabTheme) 
+           $ layoutAll (relBox 0.5 0.0 1 1) (tabbedBottom shrinkText myTabTheme)
           
   
 -- decoration helper
@@ -471,16 +473,19 @@ centeredRect wf hf (Rectangle sx sy sw sh) =
         (fromIntegral h)
 
 -- presets
-small  = centeredRect 0.5 0.45
-vertical = centeredRect 0.45 0.85
-large  = centeredRect 0.80 0.75
+small  = centeredRect 0.3 0.45
+vertical = centeredRect 0.35 0.95
+large  = centeredRect 0.65 0.85
+minimized = centeredRect 0.35 0.023
+
 
 -- presets for floating window sizes
 presets :: [Rectangle->Rectangle]
 presets =
-    [ small
+    [ large
     , vertical
-    , large
+    , small
+    , minimized
     ]
 
 -- cycle thru geoms cos im not using the xm floating layer
@@ -611,10 +616,10 @@ windowKeybindss =
     , ("M-S-j", bindByLayout [ (myFloatString, sendMessage (MoveDown 45)),
                                ("", windows W.swapDown) ])
     -- resize
-    , ("M-C-h", sendMessage (DecreaseLeft 45))
-    , ("M-C-l", sendMessage (IncreaseRight 45))
-    , ("M-C-k", sendMessage (DecreaseUp 45))
-    , ("M-C-j", sendMessage (IncreaseDown 45))
+    , ("M-C-h", sendMessage (DecreaseLeft 35))
+    , ("M-C-l", sendMessage (IncreaseRight 35))
+    , ("M-C-k", sendMessage (DecreaseUp 35))
+    , ("M-C-j", sendMessage (IncreaseDown 35))
     -- , ("M-S-g", sendMessage $ SetGeometry (Rectangle 200 100 500 300))
    , ("M-S-g", cycleGeometry)
   ]
@@ -634,8 +639,11 @@ utilityKeybinds =
     , ("M-S-<Tab>", bringSelected myWindowGSConfig)
     , ("M-C-<Space>", windowMenu)
 
-    -- change layout
+    -- change keyboard layout
     , ("C-<Space>", keyboardLayoutPrompt)
+
+    -- toggle layouts
+    , ("M-S-f", sendMessage TL.ToggleLayout)
 
     -- (dynamic workspaces test) prompt to create new workspace
     , ("C-M-n", workspacePrompt myXPConfig gotoWorkspace)

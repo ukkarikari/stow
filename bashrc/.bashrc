@@ -34,11 +34,3 @@ function y() {
 	[ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
 	rm -f -- "$tmp"
 }
-
-#function lucasemanuel() {
-#    mpv --no-video --vo=null --audio-device='pipewire/alsa_output.pci-0000_0b_00.3.analog-stereo' 'https://www.youtube.com/watch?v=j3glwtXrj0c' > /dev/null 2>&1 &
-#
-#    while true; do
-#        printf '%s\n' "tadinho dele :("
-#    done
-#}
