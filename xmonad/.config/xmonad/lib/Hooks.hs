@@ -39,7 +39,8 @@ myStartupHook = do
 myManageHook :: ManageHook
 myManageHook =
   composeAll
-    [ isDialog --> doFloat <+> doF W.shiftMaster,
+    -- [ isDialog --> doFloat <+> doF W.shiftMaster,
+    [ isDialog --> doF W.swapUp,
       className =? "Peek" --> doFloat,
       className =? "Xmessage" --> doCenterFloat,
       className =? "dzen2" --> doIgnore, -- ignore border
@@ -57,6 +58,6 @@ myLogHook dzen = do
   dynamicLogWithPP (myPP dzen)
 
 -- -----  handle event hook -----
-myHandleEventHook =
-  refocusLastWhen (pure True)
-    <> handleEventHook def
+-- myHandleEventHook =
+  -- refocusLastWhen (pure True)
+    -- <> handleEventHook def

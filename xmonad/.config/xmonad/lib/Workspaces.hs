@@ -34,10 +34,12 @@ myLayouts =
 projectLayout =
   boringWindows $
     TL.toggleLayouts
-      ( noBorders Simplest
-          ||| tabbedSplit
+      (
+          tabbedSplit
+      ||| noBorders (tabbedBottom shrinkText myTabTheme))
+      (
+          myFloat ||| noBorders (tabbedBottom shrinkText myTabTheme)
       )
-      (myFloat ||| noBorders Simplest)
 
 -- ----------------------------------------------------------
 
@@ -58,3 +60,4 @@ tempLayouts =
   boringWindows $
     myFloat
       ||| noBorders Simplest
+        ||| roledexGapDeco
