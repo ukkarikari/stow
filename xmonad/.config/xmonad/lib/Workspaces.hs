@@ -28,7 +28,9 @@ myLayouts =
     MT.mkToggle (MT.single MIRROR) $
       onWorkspace "web" webLayouts $
         onWorkspace "remote" remoteLayouts $
-          onWorkspace "temp" tempLayouts projectLayout
+          onWorkspace "temp" tempLayouts $
+            onWorkspace "movie" movieLayouts
+              projectLayout
 
 --  --- this is the default layout for new workspaces (!) ---
 projectLayout =
@@ -46,6 +48,10 @@ projectLayout =
 webLayouts =
   boringWindows $
     noBorders (tabbedBottom shrinkText myTabTheme)
+
+movieLayouts =
+  boringWindows $
+    noBorders Simplest
 
 -- \||| twoPaneThing 2 (1/2)
 
