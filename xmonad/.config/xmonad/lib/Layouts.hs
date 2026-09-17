@@ -26,8 +26,9 @@ import XMonad.Layout.Tabbed (TabbedDecoration, tabbedBottom)
 
 {-# ANN myDecorate ("HLint: ignore Eta reduce" :: String) #-}
 
--- custom layout definitions
 
+
+-- float
 myFloatString = "NoFrillsDeco Magnifier (off) SimplestFloat"
 
 myFloat =
@@ -42,6 +43,7 @@ roledexGapDeco =
         [(L, 60), (R, 60), (U, 10), (D, 10)]
         (reflectVert Roledex)
     )
+
 
 theTape =
   myDecorate

@@ -58,6 +58,6 @@ myLogHook dzen = do
   dynamicLogWithPP (myPP dzen)
 
 -- -----  handle event hook -----
--- myHandleEventHook =
-  -- refocusLastWhen (pure True)
-    -- <> handleEventHook def
+myHandleEventHook =
+ refocusLastWhen (pure True)
+ <> handleEventHook def
