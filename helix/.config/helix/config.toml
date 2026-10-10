@@ -15,6 +15,7 @@ V = ["goto_first_nonwhitespace", "extend_to_line_end"]
 
 [keys.normal.space]
 "W" = ":toggle soft-wrap.enable"
+"0" = ':toggle gutters.layout [] ["diagnostics","spacer","line-numbers","spacer","diff"]'
 
 [keys.select]
 "}" = ["move_prev_word_end", "goto_next_paragraph", "collapse_selection", "move_visual_line_down", "insert_at_line_end", "normal_mode", "insert_at_line_start", "normal_mode", "goto_next_paragraph", "trim_selections"]
