@@ -49,7 +49,7 @@ myDzenCmd :: String
 --     ++ " -bg #000000"
 --     ++ " -fg #ffffff"
 
-myDzenCmd = "" -- temp
+myDzenCmd = "cat >/dev/null" -- temp
 
 -- ---------- pretty printer ----------
 

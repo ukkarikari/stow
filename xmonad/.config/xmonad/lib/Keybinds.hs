@@ -26,6 +26,7 @@ import XMonad.Prompt.Pass (passPrompt)
 import XMonad.Prompt.Shell (shellPrompt)
 import XMonad.Prompt.Workspace (workspacePrompt)
 import XMonad.StackSet qualified as W
+import XMonad.Hooks.RefocusLast (toggleFocus)
 
 myKeybs =
   windowKeybinds
@@ -34,7 +35,10 @@ myKeybs =
 
 -- Keybinds :: [(String, X ())]
 windowKeybinds =
-  [ -- overwrite with boring windows
+  [ 
+    -- go to last foucsed window
+    ("M-i", toggleFocus),
+    -- overwrite with boring windows
     ("M-k", BW.focusUp),
     ("M-j", BW.focusDown),
     ("M-m", BW.focusMaster),
@@ -47,12 +51,13 @@ windowKeybinds =
     ("M-=", sendMessage Toggle),
     ("M-S-=", sendMessage MagnifyMore),
     ("M--", sendMessage MagnifyLess),
-    -- mirror
-    ("M-S-m", sendMessage $ MT.Toggle MIRROR),
-    -- layout overwrite
-    ("M-S-o", sendMessage $ MT.Toggle LAYOVERWRITE),
-    --     --  floating windows  --
 
+    --		-- layout modifiers --
+   -- mirror
+    ("M-S-m", sendMessage $ MT.Toggle MIRROR),
+    ("M-S-o", sendMessage $ MT.Toggle LAYOVERWRITE),
+
+    --		--  floating window layout  --
     -- movmt
     ("M-S-h", sendMessage (MoveLeft 45)),
     ("M-S-l", sendMessage (MoveRight 45)),
@@ -77,22 +82,24 @@ windowKeybinds =
     ("M-S-g", cycleGeometry)
   ]
 
+
 utilityKeybinds =
-  [ -- shell prompts
-    ("M-S-p", passPrompt myXPConfig),
-    ("M-p", shellPrompt myXPConfig),
+  [ 
+    -- shell prompts
+    ("M-S-p", passPrompt myXPConfig)
+    ,  ("M-p", shellPrompt myXPConfig)
     -- rename winodw
-    ("C-S-r", renameFocusedPrompt myXPConfig),
+    , ("C-S-r", renameFocusedPrompt myXPConfig)
     -- workspaceSelector
-    ("M-<Tab>", myWorkspaceSelector myWorkspaceGSConfig),
-    ("M-S-<Tab>", bringSelected myWindowGSConfig),
-    ("M-C-<Space>", windowMenu),
+    ,  ("M-<Tab>", myWorkspaceSelector myWorkspaceGSConfig)
+    ,  ("M-S-<Tab>", bringSelected myWindowGSConfig)
+    ,  ("M-C-<Space>", windowMenu)
     -- change keyboard layout
-    ("C-<Space>", keyboardLayoutPrompt),
+    , ("C-<Space>", keyboardLayoutPrompt),
     -- toggle layouts
-    ("M-S-f", sendMessage TL.ToggleLayout),
+     ("M-S-f", sendMessage TL.ToggleLayout),
     -- (dynamic workspaces test) prompt to create new workspace
-    ("C-M-n", workspacePrompt myXPConfig gotoWorkspace),
+     ("C-M-n", workspacePrompt myXPConfig gotoWorkspace),
     -- (dynamic workspaces test) kill all workspace processes and remove workspace
     ( "C-M-<Backspace>",
       do
@@ -102,9 +109,12 @@ utilityKeybinds =
     -- screenshot
     ("<Print>", execPrint),
     ("S-<Print>", execXclipPrint),
+    ("C-S-<Print>", execStickyPrint),
+
     -- screen lock
     ("<XF86ScreenSaver>", execLock),
     ("M-S-C-s", execLock),
+
     -- audio
     ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-"),
     ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+"),
@@ -112,27 +122,18 @@ utilityKeybinds =
   ]
 
 tempKeybinds =
-  [ -- spawn windows on aux
-    ( "M-<F2>",
-      bindOn
-        [ ( "aux",
-            do
-              spawn "urxvt -e sh -c 'btop; bash'"
-              spawn "sleep 0.5; snow"
-              spawn "sleep 1; xload"
-          )
-        ]
-    ),
+  [ 
     -- toggle mic feedback
     ("M-C-m", execMicLoopback),
+
     -- debug window test
-    ( "M-C-d",
-      spawn "urxvt -name xmonad-debug -e watch -n 0.2 'cat /tmp/xmonad-debug'" -- test
-    )
+    ("M-C-d", execStatusWindow)
   ]
 
+
 myRemovedKeys =
-  [ "M-S-q", -- disable default exit
+  [ 
+    "M-S-q", -- disable default exit
     "M-p", -- disable default dmenu
     "M-1",
     "M-2",

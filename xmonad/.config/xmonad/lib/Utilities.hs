@@ -6,6 +6,7 @@ module Utilities where
 import Appearance (myXPConfig)
 -- fix recursion
 import Data.Maybe (isNothing)
+import Data.Map qualified as M
 -- XMonad
 import XMonad
 import XMonad.Actions.DynamicWorkspaces qualified as DW
@@ -119,24 +120,66 @@ keyboardLayoutPrompt =
 myDebugLog :: X ()
 myDebugLog =
   withWindowSet $ \ws -> do
-    let curWs =
-          W.currentTag ws
+    let currentWorkspace =
+          W.workspace $
+            W.current ws
+
+        curWs =
+          W.tag currentWorkspace
 
         layoutName =
           description $
-            W.layout $
-              W.workspace $
-                W.current ws
+            W.layout currentWorkspace
+
+        screenId =
+          W.screen $
+            W.current ws
+
+        screenGeometry =
+          screenRect $
+            W.screenDetail $
+              W.current ws
+
+        visibleWs =
+          map
+            (W.tag . W.workspace)
+            (W.visible ws)
+
+        hiddenWs =
+          map W.tag (W.hidden ws)
+
+        focused =
+          W.peek ws
+
+        floating =
+          W.floating ws
+
+        focusedIsFloating =
+          maybe False (\w -> M.member w floating) focused
 
         stackOrder =
           maybe
             []
             W.integrate
-            ( W.stack $
-                W.workspace $
-                  W.current ws
+            (W.stack currentWorkspace)
+
+        windowCount w =
+          maybe
+            0
+            (length . W.integrate)
+            (W.stack w)
+
+        workspaceLines =
+          map
+            ( \w ->
+                "  "
+                  ++ W.tag w
+                  ++ ": "
+                  ++ show (windowCount w)
+                  ++ " windows | "
+                  ++ description (W.layout w)
             )
-        focused = W.peek ws
+            (W.workspaces ws)
 
     names <- mapM getName stackOrder
 
@@ -155,12 +198,26 @@ myDebugLog =
     io $
       writeFile "/tmp/xmonad-debug" $
         unlines $
-          [ "workspace: " ++ curWs,
-            "layout:    " ++ layoutName,
-            "",
-            "stack:"
+          [ 
+            "---",
+            "screen:     " ++ show screenId,
+            "geometry:   " ++ show screenGeometry,
+            "workspace:  " ++ curWs,
+            "layout:     " ++ layoutName,
+            "visible:    " ++ show visibleWs,
+            "hidden:     " ++ show hiddenWs,
+            "floating:   "
+              ++ show (M.size floating)
+              ++ " | focused="
+              ++ show focusedIsFloating,
+            "---",
+            "stack:",
+            ""
           ]
             ++ stackLines
+            -- ++ [ "", "workspaces:" ]
+            -- ++ workspaceLines
+            ++ [ "---" ]
 
 -- ---- FLOAT WEIRD THINGS ---
 

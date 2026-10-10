@@ -13,16 +13,16 @@ set omnifunc=lsp#complete
 
 
 " haskell lsp
-if executable('haskell-language-server-wrapper')
-  augroup lsp_haskell
-    autocmd!
-    autocmd FileType haskell call lsp#register_server({
-          \ 'name': 'haskell-language-server',
-          \ 'cmd': {server_info->['haskell-language-server-wrapper', '--lsp']},
-          \ 'allowlist': ['haskell'],
-          \ })
-  augroup END
-endif
+" if executable('haskell-language-server-wrapper')
+"   augroup lsp_haskell
+"     autocmd!
+"     autocmd FileType haskell call lsp#register_server({
+"           \ 'name': 'haskell-language-server',
+"           \ 'cmd': {server_info->['haskell-language-server-wrapper', '--lsp']},
+"           \ 'allowlist': ['haskell'],
+"           \ })
+"   augroup END
+" endif
 
 " -- keymaps
 nnoremap gd <plug>(lsp-definition)
@@ -31,3 +31,4 @@ nnoremap gr <plug>(lsp-references)
 
 " -- why isnt this defualt
 colorscheme default
+

@@ -17,20 +17,19 @@ import XMonad.Util.EZConfig (additionalKeysP, removeKeysP)
 import XMonad.Util.Run (spawnPipe)
 
 main :: IO ()
-main = do
-  dzen <- spawnPipe myDzenCmd
+main = 
   xmonad
     . docks
     . ewmh
-    $ myConfig dzen
+    $ myConfig 
 
-myConfig dzen =
+myConfig =
   def
     { modMask = mod4Mask, -- rebind alt to win
       layoutHook = myLayouts,
       manageHook = myManageHook <+> manageDocks <+> placeHook simpleSmart <+> manageHook def,
       startupHook = myStartupHook,
-      logHook = refocusLastLogHook <+> myLogHook dzen,
+      logHook = myLogHook,
       handleEventHook = myHandleEventHook,
       workspaces = myWorkspaces,
       focusFollowsMouse = False,

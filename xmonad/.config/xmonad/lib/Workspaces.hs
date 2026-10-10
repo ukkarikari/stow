@@ -15,6 +15,7 @@ import XMonad.Layout.PerWorkspace (onWorkspace)
 import XMonad.Layout.Simplest
 import XMonad.Layout.Tabbed (tabbedBottom)
 import XMonad.Layout.ToggleLayouts qualified as TL
+import XMonad.Layout.Magnifier
 
 myWorkspaces :: [WorkspaceId]
 myWorkspaces =
@@ -37,7 +38,8 @@ projectLayout =
   boringWindows $
     TL.toggleLayouts
       (
-          tabbedSplit
+          lockedMagnifierxy 1.05 1.98 tabbedSplit3
+--          magnifierxyOff' 1.2 2.5 tabbedSplit3
       ||| noBorders (tabbedBottom shrinkText myTabTheme))
       (
           myFloat ||| noBorders (tabbedBottom shrinkText myTabTheme)
@@ -48,6 +50,7 @@ projectLayout =
 webLayouts =
   boringWindows $
     noBorders (tabbedBottom shrinkText myTabTheme)
+    ||| myFloat
 
 movieLayouts =
   boringWindows $

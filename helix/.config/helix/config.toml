@@ -1,4 +1,4 @@
-theme = "default"
+theme="term16_dark"
 
 [editor.lsp]
 display-inlay-hints = true
@@ -6,16 +6,22 @@ display-inlay-hints = true
 
 [keys.normal]
 "C-h" = ":toggle lsp.display-inlay-hints"
+D = ["ensure_selections_forward", "extend_to_line_end"]
+
+V = ["goto_first_nonwhitespace", "extend_to_line_end"]
 
 "}" = ["move_prev_word_end", "goto_next_paragraph", "collapse_selection", "move_visual_line_down", "insert_at_line_end", "normal_mode", "insert_at_line_start", "normal_mode", "goto_next_paragraph", "trim_selections"]
 "{" = ["move_next_word_start", "goto_prev_paragraph", "move_visual_line_up", "goto_prev_paragraph", "trim_selections"]
 
+[keys.normal.space]
+"W" = ":toggle soft-wrap.enable"
 
 [keys.select]
 "}" = ["move_prev_word_end", "goto_next_paragraph", "collapse_selection", "move_visual_line_down", "insert_at_line_end", "normal_mode", "insert_at_line_start", "normal_mode", "goto_next_paragraph", "trim_selections"]
 "{" = ["move_next_word_start", "goto_prev_paragraph", "move_visual_line_up", "goto_prev_paragraph", "trim_selections"]
-
+";" = ["collapse_selection", "normal_mode"]
 
 [editor]
 true-color=true
 mouse=false
+bufferline="multiple"
