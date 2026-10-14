@@ -3,7 +3,7 @@
 module Utilities where
 
 -- local
-import Appearance (myXPConfig)
+import Appearance (myXPConfig, gsXPConfig)
 -- fix recursion
 import Data.Maybe (isNothing)
 import Data.Map qualified as M
@@ -19,6 +19,7 @@ import XMonad.StackSet qualified as W
 import XMonad.Util.ExtensibleState qualified as XS
 import XMonad.Util.NamedWindows (getName)
 import XMonad.Util.Run (safeSpawn)
+import Text.Printf (printf)
 
 -- --------- interesting renaming window utility (useful for urxvt) ---------
 renameFocusedPrompt :: XPConfig -> X ()
@@ -44,12 +45,14 @@ gotoWorkspace ws = do
       windows (W.greedyView ws)
       initializeWorkspace ws
 
+
 -- init for starting workspace specific applications
 initializeWorkspace :: WorkspaceId -> X ()
 initializeWorkspace "mail" =
   spawn "betterbird"
 initializeWorkspace _ =
   pure ()
+
 
 -- grid select for layouts
 myWorkspaceSelector :: GSConfig (WorkspaceId, Bool) -> X ()
@@ -64,6 +67,7 @@ myWorkspaceSelector conf = do
   gridselect conf entries
     >>= flip whenJust (\(name, _) -> windows (W.greedyView name))
 
+
 -- workspace gridselect colorizer
 myWorkspaceColorizer :: (WorkspaceId, Bool) -> Bool -> X (String, String)
 myWorkspaceColorizer (_, empty) active =
@@ -73,35 +77,58 @@ myWorkspaceColorizer (_, empty) active =
       (False, True) -> ("#222222", "#666666") -- empty workspace
       (False, False) -> ("#222222", "#ffffff") -- non-empty workspace
 
+
 -- workspace gridselect theme
 myWorkspaceGSConfig :: GSConfig (WorkspaceId, Bool)
 myWorkspaceGSConfig =
   def
-    { gs_cellheight = 50,
-      gs_cellwidth = 180,
-      gs_cellpadding = 10,
-      gs_font = "xft:Terminus:size=11",
+    { gs_cellheight = 25,
+      gs_cellwidth = 90,
+      gs_cellpadding = 5,
+      gs_font = "xft:Terminus:size=9",
       gs_colorizer = myWorkspaceColorizer
     }
 
--- window gridselect colorizer
+
 myWindowColorizer :: Window -> Bool -> X (String, String)
-myWindowColorizer =
-  colorRangeFromClassName
-    (0x22, 0x22, 0x22)
-    (0x66, 0x66, 0x66)
-    (0x44, 0xAA, 0xCC)
-    (0xBB, 0xBB, 0xBB)
-    (0x00, 0x00, 0x00)
+myWindowColorizer w selected = do
+  cls <- runQuery className w
+
+  let hue = 6 * stringToRatio cls
+
+      --saturation=0.65, value=0.60
+      c = 0.60 * 0.65
+      m = 0.60 - c
+      sector = floor hue `mod` 6 :: Int
+      f = hue - fromIntegral (floor hue :: Int)
+      x = c * (if even sector then f else 1 - f)
+
+      (r, g, b) = case sector of
+        0 -> (c, x, 0)
+        1 -> (x, c, 0)
+        2 -> (0, c, x)
+        3 -> (0, x, c)
+        4 -> (x, 0, c)
+        _ -> (c, 0, x)
+
+      rgb a = round ((a + m) * 255) :: Int
+      color = printf "#%02x%02x%02x"
+        (rgb r) (rgb g) (rgb b)
+
+  pure $
+    if selected
+      then ("#44aacc", "#000000")
+      else (color, "#ffffff")
+
 
 -- bringSelected theme
 myWindowGSConfig :: GSConfig Window
 myWindowGSConfig =
   def
-    { gs_cellheight = 50,
-      gs_cellwidth = 200,
-      gs_cellpadding = 10,
-      gs_font = "xft:Terminus:size=11",
+    { gs_cellheight = 20,
+      gs_cellwidth = 80,
+      gs_cellpadding = 5,
+      gs_font = "xft:Terminus:size= 9",
       gs_colorizer = myWindowColorizer
     }
 

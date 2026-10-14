@@ -35,6 +35,21 @@ myXPConfig =
       historySize = 100
     }
 
+gsXPConfig :: XPConfig
+gsXPConfig =
+  def
+    { font = "xft:Terminus:size=11",
+      bgColor = "#000000",
+      fgColor = "#8a999e",
+      bgHLight = "#66666",
+      fgHLight = "#ffffff",
+      borderColor = "#666666",
+      promptBorderWidth = 1,
+      height = 18,
+      position = CenteredAt 0.4 0.75,
+      historySize = 2
+    }
+
 -- ----------------- PRETTY PRINTER and DZEN --------------------
 -- [main] -> [myConfig] -> [logHook] -> [myPP] -> [dzen2 process]
 -- --------------------------------------------------------------

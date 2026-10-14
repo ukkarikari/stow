@@ -56,7 +56,7 @@ movieLayouts =
   boringWindows $
     noBorders Simplest
 
---    ||| twoPaneThing 2 (1/2)
+    ||| twoPaneThing 2 (1/2)
 
 
 remoteLayouts =

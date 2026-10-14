@@ -1,7 +1,7 @@
 module Keybinds where
 
 -- local
-import Appearance (myXPConfig)
+import Appearance (myXPConfig, gsXPConfig)
 import Applications
 import Layouts
 import Utilities
@@ -28,6 +28,7 @@ import XMonad.Prompt.Workspace (workspacePrompt)
 import XMonad.StackSet qualified as W
 import XMonad.Hooks.RefocusLast (toggleFocus)
 
+
 myKeybs =
   windowKeybinds
     ++ utilityKeybinds
@@ -36,17 +37,35 @@ myKeybs =
 -- Keybinds :: [(String, X ())]
 windowKeybinds =
   [ 
-    -- go to last foucsed window
-    ("M-i", toggleFocus),
-    -- overwrite with boring windows
-    ("M-k", BW.focusUp),
-    ("M-j", BW.focusDown),
-    ("M-m", BW.focusMaster),
-    ("M-b", BW.markBoring),
-    ("M-S-b", BW.clearBoring),
+
+    -- focus (TODO: FIX TOGGLE FOCUS) 
+      ("M-i", toggleFocus)
+    , ("M-k", BW.focusUp)
+    , ("M-j", BW.focusDown)
+    , ("M-m", BW.focusMaster)
+
+
+    -- window (w)
+    , ("M-w b", BW.markBoring)
+    , ("M-w B", BW.clearBoring)
+    , ("M-w r", renameFocusedPrompt myXPConfig)
+
+
+    -- workspaces (s)
+    ,  ("M-<Tab>", myWorkspaceSelector myWorkspaceGSConfig)
+    ,  ("M-S-<Tab>", bringSelected myWindowGSConfig)
+
+    ,  ("M-s n", workspacePrompt gsXPConfig gotoWorkspace)
+    ,  ( "M-s <Backspace>",
+      do
+        killAll
+        DW.removeWorkspace
+    )
+
     -- increase/decrease slave size
-    ("M-z", sendMessage MirrorShrink),
+    , ("M-z", sendMessage MirrorShrink),
     ("M-a", sendMessage MirrorExpand),
+    
     -- magnifier keys
     ("M-=", sendMessage Toggle),
     ("M-S-=", sendMessage MagnifyMore),
@@ -88,24 +107,10 @@ utilityKeybinds =
     -- shell prompts
     ("M-S-p", passPrompt myXPConfig)
     ,  ("M-p", shellPrompt myXPConfig)
-    -- rename winodw
-    , ("C-S-r", renameFocusedPrompt myXPConfig)
-    -- workspaceSelector
-    ,  ("M-<Tab>", myWorkspaceSelector myWorkspaceGSConfig)
-    ,  ("M-S-<Tab>", bringSelected myWindowGSConfig)
-    ,  ("M-C-<Space>", windowMenu)
     -- change keyboard layout
     , ("C-<Space>", keyboardLayoutPrompt),
     -- toggle layouts
      ("M-S-f", sendMessage TL.ToggleLayout),
-    -- (dynamic workspaces test) prompt to create new workspace
-     ("C-M-n", workspacePrompt myXPConfig gotoWorkspace),
-    -- (dynamic workspaces test) kill all workspace processes and remove workspace
-    ( "C-M-<Backspace>",
-      do
-        killAll
-        DW.removeWorkspace
-    ),
     -- screenshot
     ("<Print>", execPrint),
     ("S-<Print>", execXclipPrint),
